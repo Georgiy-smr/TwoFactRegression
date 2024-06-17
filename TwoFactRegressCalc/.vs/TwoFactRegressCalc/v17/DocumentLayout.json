@@ -3,8 +3,20 @@
   "WorkspaceRootPath": "C:\\Users\\\u0413\u043E\u0448\u0430 \u0438 \u0410\u043D\u044F\\TwoFactRegression\\TwoFactRegressCalc\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{2263640B-5637-49FD-A5C0-A0010C243A14}|TwoFactRegressCalc\\TwoFactRegressCalc.csproj|c:\\users\\\u0433\u043E\u0448\u0430 \u0438 \u0430\u043D\u044F\\twofactregression\\twofactregresscalc\\twofactregresscalc\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{2263640B-5637-49FD-A5C0-A0010C243A14}|TwoFactRegressCalc\\TwoFactRegressCalc.csproj|solutionrelative:twofactregresscalc\\mainwindow.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{2263640B-5637-49FD-A5C0-A0010C243A14}|TwoFactRegressCalc\\TwoFactRegressCalc.csproj|c:\\users\\\u0433\u043E\u0448\u0430 \u0438 \u0430\u043D\u044F\\twofactregression\\twofactregresscalc\\twofactregresscalc\\viewmodels\\mainviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2263640B-5637-49FD-A5C0-A0010C243A14}|TwoFactRegressCalc\\TwoFactRegressCalc.csproj|solutionrelative:twofactregresscalc\\viewmodels\\mainviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2263640B-5637-49FD-A5C0-A0010C243A14}|TwoFactRegressCalc\\TwoFactRegressCalc.csproj|c:\\users\\\u0433\u043E\u0448\u0430 \u0438 \u0430\u043D\u044F\\twofactregression\\twofactregresscalc\\twofactregresscalc\\infrastructure\\di\\services\\readers\\excelfiledatareader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2263640B-5637-49FD-A5C0-A0010C243A14}|TwoFactRegressCalc\\TwoFactRegressCalc.csproj|solutionrelative:twofactregresscalc\\infrastructure\\di\\services\\readers\\excelfiledatareader.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2263640B-5637-49FD-A5C0-A0010C243A14}|TwoFactRegressCalc\\TwoFactRegressCalc.csproj|c:\\users\\\u0433\u043E\u0448\u0430 \u0438 \u0430\u043D\u044F\\twofactregression\\twofactregresscalc\\twofactregresscalc\\infrastructure\\di\\serviceregistrar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2263640B-5637-49FD-A5C0-A0010C243A14}|TwoFactRegressCalc\\TwoFactRegressCalc.csproj|solutionrelative:twofactregresscalc\\infrastructure\\di\\serviceregistrar.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{2263640B-5637-49FD-A5C0-A0010C243A14}|TwoFactRegressCalc\\TwoFactRegressCalc.csproj|c:\\users\\\u0433\u043E\u0448\u0430 \u0438 \u0430\u043D\u044F\\twofactregression\\twofactregresscalc\\twofactregresscalc\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{2263640B-5637-49FD-A5C0-A0010C243A14}|TwoFactRegressCalc\\TwoFactRegressCalc.csproj|solutionrelative:twofactregresscalc\\app.xaml.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -27,14 +39,53 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "MainWindow.xaml.cs",
-              "DocumentMoniker": "C:\\Users\\\u0413\u043E\u0448\u0430 \u0438 \u0410\u043D\u044F\\TwoFactRegression\\TwoFactRegressCalc\\TwoFactRegressCalc\\MainWindow.xaml.cs",
-              "RelativeDocumentMoniker": "TwoFactRegressCalc\\MainWindow.xaml.cs",
-              "ToolTip": "C:\\Users\\\u0413\u043E\u0448\u0430 \u0438 \u0410\u043D\u044F\\TwoFactRegression\\TwoFactRegressCalc\\TwoFactRegressCalc\\MainWindow.xaml.cs",
-              "RelativeToolTip": "TwoFactRegressCalc\\MainWindow.xaml.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Title": "MainViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\\u0413\u043E\u0448\u0430 \u0438 \u0410\u043D\u044F\\TwoFactRegression\\TwoFactRegressCalc\\TwoFactRegressCalc\\ViewModels\\MainViewModel.cs",
+              "RelativeDocumentMoniker": "TwoFactRegressCalc\\ViewModels\\MainViewModel.cs",
+              "ToolTip": "C:\\Users\\\u0413\u043E\u0448\u0430 \u0438 \u0410\u043D\u044F\\TwoFactRegression\\TwoFactRegressCalc\\TwoFactRegressCalc\\ViewModels\\MainViewModel.cs",
+              "RelativeToolTip": "TwoFactRegressCalc\\ViewModels\\MainViewModel.cs",
+              "ViewState": "AQIAADMAAAAAAAAAAAAqwD4AAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-15T08:39:43.956Z",
+              "WhenOpened": "2024-06-17T01:47:14.028Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ExcelFileDataReader.cs",
+              "DocumentMoniker": "C:\\Users\\\u0413\u043E\u0448\u0430 \u0438 \u0410\u043D\u044F\\TwoFactRegression\\TwoFactRegressCalc\\TwoFactRegressCalc\\Infrastructure\\DI\\Services\\Readers\\ExcelFileDataReader.cs",
+              "RelativeDocumentMoniker": "TwoFactRegressCalc\\Infrastructure\\DI\\Services\\Readers\\ExcelFileDataReader.cs",
+              "ToolTip": "C:\\Users\\\u0413\u043E\u0448\u0430 \u0438 \u0410\u043D\u044F\\TwoFactRegression\\TwoFactRegressCalc\\TwoFactRegressCalc\\Infrastructure\\DI\\Services\\Readers\\ExcelFileDataReader.cs",
+              "RelativeToolTip": "TwoFactRegressCalc\\Infrastructure\\DI\\Services\\Readers\\ExcelFileDataReader.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABIAAAAcAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-17T01:45:12.297Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ServiceRegistrar.cs",
+              "DocumentMoniker": "C:\\Users\\\u0413\u043E\u0448\u0430 \u0438 \u0410\u043D\u044F\\TwoFactRegression\\TwoFactRegressCalc\\TwoFactRegressCalc\\Infrastructure\\DI\\ServiceRegistrar.cs",
+              "RelativeDocumentMoniker": "TwoFactRegressCalc\\Infrastructure\\DI\\ServiceRegistrar.cs",
+              "ToolTip": "C:\\Users\\\u0413\u043E\u0448\u0430 \u0438 \u0410\u043D\u044F\\TwoFactRegression\\TwoFactRegressCalc\\TwoFactRegressCalc\\Infrastructure\\DI\\ServiceRegistrar.cs",
+              "RelativeToolTip": "TwoFactRegressCalc\\Infrastructure\\DI\\ServiceRegistrar.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAYAAAAGAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-17T01:44:41.486Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "App.xaml.cs",
+              "DocumentMoniker": "C:\\Users\\\u0413\u043E\u0448\u0430 \u0438 \u0410\u043D\u044F\\TwoFactRegression\\TwoFactRegressCalc\\TwoFactRegressCalc\\App.xaml.cs",
+              "RelativeDocumentMoniker": "TwoFactRegressCalc\\App.xaml.cs",
+              "ToolTip": "C:\\Users\\\u0413\u043E\u0448\u0430 \u0438 \u0410\u043D\u044F\\TwoFactRegression\\TwoFactRegressCalc\\TwoFactRegressCalc\\App.xaml.cs",
+              "RelativeToolTip": "TwoFactRegressCalc\\App.xaml.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAATAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-17T01:43:15.358Z",
               "EditorCaption": ""
             }
           ]

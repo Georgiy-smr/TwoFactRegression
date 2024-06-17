@@ -1,0 +1,30 @@
+﻿<Window x:Class="TwoFactRegressCalc.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" mc:Ignorable="d"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:TwoFactRegressCalc"
+        xmlns:vm="clr-namespace:TwoFactRegressCalc.ViewModels"
+        d:DataContext="{d:DesignInstance Type={x:Type vm:MainViewModel} }"
+        Title="{Binding Title}" Height="450" Width="800">
+    <Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition  Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <DockPanel
+                HorizontalAlignment="Left"
+                Grid.Row="1">
+                <Button
+                    DockPanel.Dock="Left"
+                    Content="Расчитать"
+                    Command ="{Binding СalcFromExelCommand}">
+                </Button>
+            </DockPanel>
+ 
+        </Grid>
+
+
+    </Grid>
+</Window>
