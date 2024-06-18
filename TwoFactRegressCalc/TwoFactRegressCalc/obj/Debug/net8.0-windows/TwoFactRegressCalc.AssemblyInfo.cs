@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("TwoFactRegressCalc")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+189742406780c366a1a9d1eac89a16a948f36873")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+eb15693ed68074d116c1aeaa39e5afd78cea796e")]
 [assembly: System.Reflection.AssemblyProductAttribute("TwoFactRegressCalc")]
 [assembly: System.Reflection.AssemblyTitleAttribute("TwoFactRegressCalc")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
