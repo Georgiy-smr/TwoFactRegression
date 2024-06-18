@@ -7,13 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using OfficeOpenXml.FormulaParsing.Excel.Functions;
 using Regression.Two_factor_regression;
 using TwoFactRegressCalc.Infrastructure.Commands.Base;
 using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 using TwoFactRegressCalc.ViewModels.Base;
-using MathNet.Symbolics;
 
 namespace TwoFactRegressCalc.ViewModels
 {
@@ -60,70 +60,86 @@ namespace TwoFactRegressCalc.ViewModels
                 if(await _dataExcelReader.ReadAsync(_filedialog.FilePath).ToListAsync() is not {Count:>15} data)
                    return;
                 var d = data.CreateThirdOrderPolynomialExpression();
-                var s = _regression.CalcCoefs(d).ToArray();
-
-                double inputX1 = data[1].X1;
-                double inputX2 = data[1].X2;
-                double outPut = data[1].Y;
-                double res = 0;
-                for (int i = 0; i < s.Length; i++)
-                {
-                    switch (i)
-                    {
-                        case 0:
-                            res = +s[i];
-                            break;
-                        case 1:
-                            res = +s[i] * inputX2;
-                            break;
-                        case 2:
-                            res = +s[i] * inputX2 * inputX2;
-                            break;
-                        case 3:
-                            res = +s[i] * inputX1;
-                            break;
-                        case 4:
-                            res = +s[i] * inputX1 * inputX1;
-                            break;
-                        case 5:
-                            res = +s[i] * inputX1 * inputX2;
-                            break;
-                        case 6:
-                            res = +s[i] * inputX2 * inputX1 * inputX1;
-                            break;
-                        case 7:
-                            res = +s[i] * inputX2 * inputX2 * inputX1;
-                            break;
-                        case 8:
-                            res = +s[i] * inputX1 * inputX1 * inputX2 * inputX2;
-                            break;
-                        case 9:
-                            res = +s[i] * inputX1 * inputX1 * inputX1;
-                            break;
-                        case 10:
-                            res = +s[i] * inputX2 * inputX1 * inputX1 * inputX1;
-                            break;
-                        case 11:
-                            res = +s[i] * inputX2 * inputX2 * inputX1 * inputX1 * inputX1;
-                            break;
-                        case 12:
-                            res = +s[i] * inputX2 * inputX2 * inputX2;
-                            break;
-                        case 13:
-                            res = +s[i] * inputX2 * inputX2 * inputX2 * inputX1;
-                            break;
-                        case 14:
-                            res = +s[i] * inputX2 * inputX2 * inputX2 * inputX1 * inputX1;
-                            break;
-                        case 15:
-                            res = +s[i] * inputX2 * inputX2 * inputX2 * inputX1 * inputX1 * inputX1;
-                            break;
-
-                    }
-                }
+                var s = _regression.CalcCoefs(d);
+                var results = data.Select(x1x2y => CalcRes(x1x2y, s.ToArray())).ToList();
+                //var result = CalcRes(data.First(), s.ToArray());
             }
         }
 
+        private double CalcRes(DataTwoFact data, double[] resultCheckedCoef)
+        {
+            double res = 0;
+            for (int i = 0; i < resultCheckedCoef.Count(); i++)
+            {
+                switch (i)
+                {
+                    case 0:
+                        res += resultCheckedCoef[i];
+                        break;
+                    case 1:
+                        //a1* item.X2
+                        res += resultCheckedCoef[i] * data.X2;
+                        break;
+                    case 2:
+                        //a2* item.X2* item.X2 +
+                        res += resultCheckedCoef[i] * data.X2 * data.X2;
+                        break;
+                    case 3:
+                        //a3* item.X1 +
+                        res += resultCheckedCoef[i] * data.X1;
+                        break;
+                    case 4:
+                        //   a4 * item.X1 * item.X1 +
+                        res += resultCheckedCoef[i] * data.X1 * data.X1;
+                        break;
+                    case 5:
+                        //a5 * item.X1 * item.X2 +
+                        res += resultCheckedCoef[i] * data.X1 * data.X2;
+                        break;
+                    case 6:
+                        // a6* item.X2* item.X1* item.X1 +
+                        res += resultCheckedCoef[i] * data.X2 * data.X1 * data.X1;
+                        break;
+                    case 7:
+                        //a7* item.X2* item.X2* item.X1 +
+                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X1;
+                        break;
+                    case 8:
+                        //a8* item.X1* item.X1* item.X2* item.X2 +
+                        res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X2 * data.X2;
+                        break;
+                    case 9:
+                        //a9* item.X1* item.X1* item.X1 +
+                        res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X1;
+                        break;
+                    case 10:
+                        //a10* item.X2* item.X1* item.X1* item.X1 +
+                        res += resultCheckedCoef[i] * data.X2 * data.X1 * data.X1 * data.X1;
+                        break;
+                    case 11:
+                        //a11* item.X2* item.X2* item.X1* item.X1* item.X1 +
+                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X1 * data.X1 * data.X1;
+                        break;
+                    case 12:
+                        //a12* item.X2* item.X2* item.X2 +
+                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X2;
+                        break;
+                    case 13:
+                        //a13* item.X2* item.X2* item.X2* item.X1 +
+                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X2 * data.X1;
+                        break;
+                    case 14:
+                        //a14* item.X2* item.X2* item.X2* item.X1* item.X1 +
+                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X2 * data.X1 * data.X1;
+                        break;
+                    case 15:
+                        //a15* item.X2* item.X2* item.X2* item.X1* item.X1* item.X1);
+                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X2 * data.X1 * data.X1 * data.X1;
+                        break;
+                }
+            }
+            return res;
+        }
         private bool CanCalcFromExelCommandExecute(object p)
         {
             return true;
