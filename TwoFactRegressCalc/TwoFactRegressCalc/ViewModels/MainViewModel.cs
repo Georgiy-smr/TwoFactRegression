@@ -13,23 +13,28 @@ using TwoFactRegressCalc.Infrastructure.Commands.Base;
 using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
+using TwoFactRegressCalc.Infrastructure.DI.Services.Writer;
 using TwoFactRegressCalc.ViewModels.Base;
 
 namespace TwoFactRegressCalc.ViewModels
 {
     internal class MainViewModel : ViewModel
     {
-        public MainViewModel(IReadData<DataTwoFact> dataExcelReader, IDialogService dialog, IRegression<DataTwoFact> regression)
+        public MainViewModel(
+            IReadData<DataTwoFact> dataExcelReader, 
+            IDialogService dialog, 
+            IRegression<DataTwoFact> regression,
+            IWriteData<double[]> writer)
         {
             _dataExcelReader = dataExcelReader;
             _filedialog = dialog;
             _regression = regression;
+            _writer = writer;
         }
         private readonly IReadData<DataTwoFact> _dataExcelReader;
         private readonly IDialogService _filedialog;
         private readonly IRegression<DataTwoFact> _regression;
-
-
+        private readonly IWriteData<double[]> _writer;
         /// <summary>
         /// summary
         /// </summary>
@@ -63,6 +68,8 @@ namespace TwoFactRegressCalc.ViewModels
                 var s = _regression.CalcCoefs(d);
                 var results = data.Select(x1x2y => CalcRes(x1x2y, s.ToArray())).ToList();
                 //var result = CalcRes(data.First(), s.ToArray());
+                if(results.Any())
+                   await _writer.Write(s.ToArray(), _filedialog.FilePath);
                 var strbuilder = new StringBuilder();
                 foreach (var coef in s)
                 {

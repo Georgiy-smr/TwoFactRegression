@@ -21,6 +21,7 @@ namespace TwoFactRegressCalc
             services.FileDialog();
             services.MainWindowAndViewModel();
             services.Regression();
+            services.FilledExcelDoc();
             return services;
         }
 
