@@ -63,6 +63,13 @@ namespace TwoFactRegressCalc.ViewModels
                 var s = _regression.CalcCoefs(d);
                 var results = data.Select(x1x2y => CalcRes(x1x2y, s.ToArray())).ToList();
                 //var result = CalcRes(data.First(), s.ToArray());
+                var strbuilder = new StringBuilder();
+                foreach (var coef in s)
+                {
+                    strbuilder.AppendLine(coef.ToString());
+                }
+                var coefsString = strbuilder.ToString();
+                strbuilder.Clear();
             }
         }
 
