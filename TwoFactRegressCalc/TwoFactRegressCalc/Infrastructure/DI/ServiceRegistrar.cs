@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -39,7 +40,7 @@ namespace TwoFactRegressCalc.Infrastructure.DI
             service.AddTransient<IRegression<DataTwoFact>, RegressionThidOrderPolynomial>();
 
         internal static IServiceCollection FilledExcelDoc(this ServiceCollection service) =>
-            service.AddTransient<IWriteData<double[]>, ExcelFillData>();
+            service.AddTransient<IWriteData<IEnumerable<double[]>>, ExcelFillPressureAndTempData>();
     }
      
 }

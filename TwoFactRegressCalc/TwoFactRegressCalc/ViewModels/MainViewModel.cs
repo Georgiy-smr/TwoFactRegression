@@ -24,7 +24,7 @@ namespace TwoFactRegressCalc.ViewModels
             IReadData<DataTwoFact> dataExcelReader, 
             IDialogService dialog, 
             IRegression<DataTwoFact> regression,
-            IWriteData<double[]> writer)
+            IEnumerable<double[]> writer)
         {
             _dataExcelReader = dataExcelReader;
             _filedialog = dialog;
@@ -34,7 +34,7 @@ namespace TwoFactRegressCalc.ViewModels
         private readonly IReadData<DataTwoFact> _dataExcelReader;
         private readonly IDialogService _filedialog;
         private readonly IRegression<DataTwoFact> _regression;
-        private readonly IWriteData<double[]> _writer;
+        private readonly IEnumerable<double[]> _writer;
         /// <summary>
         /// summary
         /// </summary>
@@ -62,21 +62,25 @@ namespace TwoFactRegressCalc.ViewModels
             _filedialog.Filter = "Excel workbooks (*.xlsx)|*.xlsx";
             if (_filedialog.OpenFileDialog())
             {
-                if(await _dataExcelReader.ReadAsync(_filedialog.FilePath).ToListAsync() is not {Count:>15} data)
+                if(await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Pressure).ToListAsync() is not {Count:>15} dataPressure)
                    return;
-                var d = data.CreateThirdOrderPolynomialExpression();
+                var d = dataPressure.CreateThirdOrderPolynomialExpression();
                 var s = _regression.CalcCoefs(d);
-                var results = data.Select(x1x2y => CalcRes(x1x2y, s.ToArray())).ToList();
-                //var result = CalcRes(data.First(), s.ToArray());
-                if(results.Any())
-                   await _writer.Write(s.ToArray(), _filedialog.FilePath);
-                var strbuilder = new StringBuilder();
-                foreach (var coef in s)
-                {
-                    strbuilder.AppendLine(coef.ToString());
-                }
-                var coefsString = strbuilder.ToString();
-                strbuilder.Clear();
+                var results = dataPressure.Select(x1x2y => CalcRes(x1x2y, s.ToArray())).ToList();
+
+                if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Temperature).ToListAsync() is not { Count: > 15 } dataTemp)
+                    return;
+
+
+                //if (results.Any())
+                //   await _writer.Write(new List<double[]>(){ s.ToArray() }, _filedialog.FilePath);
+                //var strbuilder = new StringBuilder();
+                //foreach (var coef in s)
+                //{
+                //    strbuilder.AppendLine(coef.ToString());
+                //}
+                //var coefsString = strbuilder.ToString();
+                //strbuilder.Clear();
             }
         }
 
