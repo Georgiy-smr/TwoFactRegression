@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using OfficeOpenXml.FormulaParsing.Excel.Functions;
 using Regression.Two_factor_regression;
+using TwoFactRegressCalc.Extansions.TwoFactExpression;
 using TwoFactRegressCalc.Infrastructure.Commands.Base;
 using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
@@ -24,7 +25,7 @@ namespace TwoFactRegressCalc.ViewModels
             IReadData<DataTwoFact> dataExcelReader, 
             IDialogService dialog, 
             IRegression<DataTwoFact> regression,
-            IEnumerable<double[]> writer)
+            IWriteData<IEnumerable<double[]>> writer)
         {
             _dataExcelReader = dataExcelReader;
             _filedialog = dialog;
@@ -34,7 +35,7 @@ namespace TwoFactRegressCalc.ViewModels
         private readonly IReadData<DataTwoFact> _dataExcelReader;
         private readonly IDialogService _filedialog;
         private readonly IRegression<DataTwoFact> _regression;
-        private readonly IEnumerable<double[]> _writer;
+        private readonly IWriteData<IEnumerable<double[]>> _writer;
         /// <summary>
         /// summary
         /// </summary>
@@ -70,10 +71,13 @@ namespace TwoFactRegressCalc.ViewModels
 
                 if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Temperature).ToListAsync() is not { Count: > 15 } dataTemp)
                     return;
+                var poliTemp = dataTemp.CreateTwoOrderPolynomialExpression();
+                var resTemp = _regression.CalcCoefs(poliTemp);
 
+                var resultsTemps = dataTemp.Select(x1x2y => CalcResTemp(x1x2y, resTemp.ToArray())).ToList();
 
-                //if (results.Any())
-                //   await _writer.Write(new List<double[]>(){ s.ToArray() }, _filedialog.FilePath);
+                if (s.Any() && resTemp.Any())
+                   await _writer.Write(new List<double[]>(){ s.ToArray(), resTemp.ToArray() }, _filedialog.FilePath);
                 //var strbuilder = new StringBuilder();
                 //foreach (var coef in s)
                 //{
@@ -83,7 +87,52 @@ namespace TwoFactRegressCalc.ViewModels
                 //strbuilder.Clear();
             }
         }
-
+        private double CalcResTemp(DataTwoFact data, double[] resultCheckedCoef)
+        {
+            double res = 0;
+            for (int i = 0; i < resultCheckedCoef.Count(); i++)
+            {
+                switch (i)
+                {
+                    case 0:
+                        res += resultCheckedCoef[i];
+                        break;
+                    case 1:
+                        //a1* item.X2
+                        res += resultCheckedCoef[i] * data.X2;
+                        break;
+                    case 2:
+                        //a2* item.X2* item.X2 +
+                        res += resultCheckedCoef[i] * data.X2 * data.X2;
+                        break;
+                    case 3:
+                        //a3* item.X1 +
+                        res += resultCheckedCoef[i] * data.X1;
+                        break;
+                    case 4:
+                        //   a4 * item.X1 * item.X1 +
+                        res += resultCheckedCoef[i] * data.X1 * data.X1;
+                        break;
+                    case 5:
+                        //a5 * item.X1 * item.X2 +
+                        res += resultCheckedCoef[i] * data.X1 * data.X2;
+                        break;
+                    case 6:
+                        // a6* item.X2* item.X1* item.X1 +
+                        res += resultCheckedCoef[i] * data.X2 * data.X1 * data.X1;
+                        break;
+                    case 7:
+                        //a7* item.X2* item.X2* item.X1 +
+                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X1;
+                        break;
+                    case 8:
+                        //a8* item.X1* item.X1* item.X2* item.X2 +
+                        res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X2 * data.X2;
+                        break;
+                }
+            }
+            return res;
+        }
         private double CalcRes(DataTwoFact data, double[] resultCheckedCoef)
         {
             double res = 0;

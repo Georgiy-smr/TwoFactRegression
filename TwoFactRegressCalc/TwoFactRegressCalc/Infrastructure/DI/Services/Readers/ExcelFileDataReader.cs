@@ -18,25 +18,13 @@ namespace TwoFactRegressCalc.Infrastructure.DI.Services.Readers
             if (excelPackage.Workbook.Worksheets.FirstOrDefault() is not { } sheetMainParams)
                 throw new NotImplementedException();
 
-            int x1 = tValue switch
-            {
-                PhysicalValue.Pressure => 1,
-                PhysicalValue.Temperature => 2,
-                _ => throw new ArgumentOutOfRangeException(nameof(tValue), tValue, null)
-            };
-            int x2 = tValue switch
-            {
-                PhysicalValue.Pressure => 2,
-                PhysicalValue.Temperature => 1,
-                _ => throw new ArgumentOutOfRangeException(nameof(tValue), tValue, null)
-            };
             int y = tValue switch
             {
                 PhysicalValue.Pressure => 3,
                 PhysicalValue.Temperature => 4,
                 _ => throw new ArgumentOutOfRangeException(nameof(tValue), tValue, null)
             };
-            await foreach (var dataTwoFact in ReadWorksheetAsync(sheetMainParams, x1Column:x1, x2Column:x2, yColumn:y))
+            await foreach (var dataTwoFact in ReadWorksheetAsync(sheetMainParams, yColumn:y))
                 yield return dataTwoFact;
         }
 
