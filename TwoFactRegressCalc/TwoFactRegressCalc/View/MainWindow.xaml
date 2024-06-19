@@ -6,23 +6,55 @@
         xmlns:local="clr-namespace:TwoFactRegressCalc"
         xmlns:vm="clr-namespace:TwoFactRegressCalc.ViewModels"
         d:DataContext="{d:DesignInstance Type={x:Type vm:MainViewModel} }"
-        Title="{Binding Title}" Height="450" Width="800">
+        Title="{Binding Title}" Height="850" Width="850">
+    <Window.Resources>
+        <Style x:Key="CustomButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="#FF4080C9"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#FF4080C9"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="FontFamily" Value="Arial"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FF60A0E0"/>
+                    <Setter Property="BorderBrush" Value="#FF60A0E0"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#FF305070"/>
+                    <Setter Property="BorderBrush" Value="#FF305070"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition  Height="*"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <DockPanel
-                HorizontalAlignment="Left"
-                Grid.Row="1">
-                <Button
-                    DockPanel.Dock="Left"
-                    Content="Расчитать"
-                    Command ="{Binding СalcFromExelCommand}">
-                </Button>
-            </DockPanel>
- 
+
+            <Button
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Content="RUN"
+                FontSize="300"
+
+                Style="{StaticResource CustomButtonStyle}"
+                Command ="{Binding СalcFromExelCommand}">
+            </Button>
         </Grid>
 
 

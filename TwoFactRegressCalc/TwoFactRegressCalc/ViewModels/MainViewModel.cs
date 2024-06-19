@@ -6,6 +6,7 @@ using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using OfficeOpenXml.FormulaParsing.Excel.Functions;
 using Regression.Two_factor_regression;
@@ -61,31 +62,29 @@ namespace TwoFactRegressCalc.ViewModels
         private async Task OnCalcFromExelCommandExecuted(object arg)
         {
             _filedialog.Filter = "Excel workbooks (*.xlsx)|*.xlsx";
-            if (_filedialog.OpenFileDialog())
+            if (!_filedialog.OpenFileDialog()) 
+                return;
+            if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Pressure).ToListAsync() is not
+                { Count: > 15 } dataPressure)
+                return;
+            var pressurePolynimial = dataPressure.CreateThirdOrderPolynomialExpression();
+            var resultCoefPressure = _regression.CalcCoefs(pressurePolynimial);
+            var сheckResult = dataPressure.Select(x1x2y => CalcResDelta(x1x2y, resultCoefPressure.ToArray())).ToList();
+            if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Temperature).ToListAsync() is
+                not { Count: > 8 } dataTemp)
+                return;
+            var polyTemp = dataTemp.CreateTwoOrderPolynomialExpression();
+            var resCoefTemp = _regression.CalcCoefs(polyTemp);
+            var resultsTemps = dataTemp.Select(x1x2y => CalcResTemp(x1x2y, resCoefTemp.ToArray())).ToList();
+            if (resultCoefPressure is null || resCoefTemp is null)
+                MessageBox.Show("Error. Нету коэффицентов");
+            if (resultCoefPressure!.Any() && resCoefTemp!.Any())
             {
-                if(await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Pressure).ToListAsync() is not {Count:>15} dataPressure)
-                   return;
-                var d = dataPressure.CreateThirdOrderPolynomialExpression();
-                var s = _regression.CalcCoefs(d);
-                var results = dataPressure.Select(x1x2y => CalcRes(x1x2y, s.ToArray())).ToList();
-
-                if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Temperature).ToListAsync() is not { Count: > 15 } dataTemp)
-                    return;
-                var poliTemp = dataTemp.CreateTwoOrderPolynomialExpression();
-                var resTemp = _regression.CalcCoefs(poliTemp);
-
-                var resultsTemps = dataTemp.Select(x1x2y => CalcResTemp(x1x2y, resTemp.ToArray())).ToList();
-
-                if (s.Any() && resTemp.Any())
-                   await _writer.Write(new List<double[]>(){ s.ToArray(), resTemp.ToArray() }, _filedialog.FilePath);
-                //var strbuilder = new StringBuilder();
-                //foreach (var coef in s)
-                //{
-                //    strbuilder.AppendLine(coef.ToString());
-                //}
-                //var coefsString = strbuilder.ToString();
-                //strbuilder.Clear();
+                await _writer.Write(new List<double[]>() { resultCoefPressure.ToArray(), resCoefTemp.ToArray() }, _filedialog.FilePath);
+                MessageBox.Show($" ΔP_max = {сheckResult.Max()};\n ΔT_max = {resultsTemps.Max()};", "Успех!");
             }
+            else MessageBox.Show("Error. Нету коэффицентов");
+
         }
         private double CalcResTemp(DataTwoFact data, double[] resultCheckedCoef)
         {
@@ -131,9 +130,9 @@ namespace TwoFactRegressCalc.ViewModels
                         break;
                 }
             }
-            return res;
+            return Math.Abs(data.Y - res);
         }
-        private double CalcRes(DataTwoFact data, double[] resultCheckedCoef)
+        private double CalcResDelta(DataTwoFact data, double[] resultCheckedCoef)
         {
             double res = 0;
             for (int i = 0; i < resultCheckedCoef.Count(); i++)
@@ -205,7 +204,7 @@ namespace TwoFactRegressCalc.ViewModels
                         break;
                 }
             }
-            return res;
+            return Math.Abs(data.Y - res);
         }
         private bool CanCalcFromExelCommandExecute(object p)
         {
