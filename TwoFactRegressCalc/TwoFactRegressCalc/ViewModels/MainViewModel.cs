@@ -206,8 +206,10 @@ namespace TwoFactRegressCalc.ViewModels
             }
             return Math.Abs(data.Y - res);
         }
+	//Test
         private bool CanCalcFromExelCommandExecute(object p)
         {
+		
             return true;
         }
 
