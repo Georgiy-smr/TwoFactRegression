@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Regression.Two_factor_regression;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Creator;
 using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
+using TwoFactRegressCalc.Infrastructure.DI.Services.JsonFileService;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression.TwoFactRegressThidOrder;
@@ -44,6 +45,9 @@ namespace TwoFactRegressCalc.Infrastructure.DI
 
         internal static IServiceCollection FileCreator(this ServiceCollection service) =>
             service.AddTransient<ICreate<Coefficients>, CreateFileWithCoefficients>();
+        internal static IServiceCollection JsonFileService(this ServiceCollection service) =>
+            service.AddTransient<IJsonFileService<Config>, SettingsJsonFileService>();
+
     }
      
 }

@@ -4,9 +4,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TwoFactRegressCalc"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         xmlns:vm="clr-namespace:TwoFactRegressCalc.ViewModels"
         d:DataContext="{d:DesignInstance Type={x:Type vm:MainViewModel} }"
-        Title="{Binding Title}" Height="850" Width="850">
+        Title="{Binding Title}" Height="400" Width="400">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadCommand}"/>
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <Window.Resources>
         <Style x:Key="CustomButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#FF4080C9"/>
@@ -43,18 +49,62 @@
     <Grid>
         <Grid>
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
             <Button
-                HorizontalAlignment="Center"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Center"
                 Content="RUN"
-                FontSize="300"
-
+                FontSize="30"
                 Style="{StaticResource CustomButtonStyle}"
                 Command ="{Binding СalcFromExсelCommand}">
             </Button>
+
+            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                <StackPanel Margin="0 14 0 0">
+                    <TextBlock MinWidth="140"
+                               Margin="0 0 0 8"
+                               Text="Расположение файлов"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               FontWeight="SemiBold"/>
+                    <DockPanel>
+                        <TextBox DockPanel.Dock="Left"
+                                 MinWidth="300"
+                                 Padding="0 0 0 0"
+                                 VerticalContentAlignment="Center"
+                                 IsReadOnly="True"
+                                 Margin="0,0,0,0"
+                                 BorderBrush="Transparent"
+                                 IsHitTestVisible="True"
+                                 MaxWidth="200"
+                                 Text="{Binding FilePath}">
+                        </TextBox>
+                        <Button DockPanel.Dock="Right" Command="{Binding EditPathFileSaveCommand}"> 
+                            Изменить
+                        </Button>
+                    </DockPanel>
+
+                    <DockPanel MinWidth="140">
+                        <TextBlock DockPanel.Dock="Left"
+                                   Margin="0 0 0 8"
+                                   Text="Заводской номер - "
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   FontWeight="SemiBold"/>
+                        <TextBlock DockPanel.Dock="Right"
+                                   Margin="10 0 0 8"
+                                   Text="{Binding SerialText}"
+                                   HorizontalAlignment="Left"
+                                   VerticalAlignment="Center"
+                                   FontWeight="SemiBold"/>
+                    </DockPanel>
+                    <TextBox Text="{Binding InputSerial, UpdateSourceTrigger = PropertyChanged}"/>
+                </StackPanel>
+            </StackPanel>
+
         </Grid>
 
 
