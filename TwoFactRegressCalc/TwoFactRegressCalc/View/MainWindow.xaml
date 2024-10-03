@@ -53,7 +53,7 @@
                 FontSize="300"
 
                 Style="{StaticResource CustomButtonStyle}"
-                Command ="{Binding СalcFromExelCommand}">
+                Command ="{Binding СalcFromExсelCommand}">
             </Button>
         </Grid>
 

@@ -6,11 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Regression.Two_factor_regression;
+using TwoFactRegressCalc.Infrastructure.DI.Services.Creator;
 using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression.TwoFactRegressThidOrder;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Writer;
+using TwoFactRegressCalc.Models;
 using TwoFactRegressCalc.ViewModels;
 
 namespace TwoFactRegressCalc.Infrastructure.DI
@@ -33,14 +35,15 @@ namespace TwoFactRegressCalc.Infrastructure.DI
         internal static IServiceCollection FileDialog(this ServiceCollection service) =>
             service.AddTransient<IDialogService, FileDialogService>();
 
-        internal static IServiceCollection ThridTwoFactRegress(this ServiceCollection service) =>
-            service.AddTransient<IRegression<DataTwoFact>, RegressionThidOrderPolynomial>();
 
         internal static IServiceCollection Regression(this ServiceCollection service) =>
             service.AddTransient<IRegression<DataTwoFact>, RegressionThidOrderPolynomial>();
 
         internal static IServiceCollection FilledExcelDoc(this ServiceCollection service) =>
             service.AddTransient<IWriteData<IEnumerable<double[]>>, ExcelFillPressureAndTempData>();
+
+        internal static IServiceCollection FileCreator(this ServiceCollection service) =>
+            service.AddTransient<ICreate<Coefficients>, CreateFileWithCoefficients>();
     }
      
 }

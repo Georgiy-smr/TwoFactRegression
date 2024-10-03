@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics.Metrics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,10 +13,12 @@ using OfficeOpenXml.FormulaParsing.Excel.Functions;
 using Regression.Two_factor_regression;
 using TwoFactRegressCalc.Extansions.TwoFactExpression;
 using TwoFactRegressCalc.Infrastructure.Commands.Base;
+using TwoFactRegressCalc.Infrastructure.DI.Services.Creator;
 using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Writer;
+using TwoFactRegressCalc.Models;
 using TwoFactRegressCalc.ViewModels.Base;
 
 namespace TwoFactRegressCalc.ViewModels
@@ -26,17 +29,20 @@ namespace TwoFactRegressCalc.ViewModels
             IReadData<DataTwoFact> dataExcelReader, 
             IDialogService dialog, 
             IRegression<DataTwoFact> regression,
-            IWriteData<IEnumerable<double[]>> writer)
+            IWriteData<IEnumerable<double[]>> writer,
+            ICreate<Coefficients> fileCreator)
         {
             _dataExcelReader = dataExcelReader;
             _filedialog = dialog;
             _regression = regression;
             _writer = writer;
+            _fileCreator = fileCreator;
         }
         private readonly IReadData<DataTwoFact> _dataExcelReader;
         private readonly IDialogService _filedialog;
         private readonly IRegression<DataTwoFact> _regression;
         private readonly IWriteData<IEnumerable<double[]>> _writer;
+        private readonly ICreate<Coefficients> _fileCreator;
         /// <summary>
         /// summary
         /// </summary>
@@ -56,7 +62,7 @@ namespace TwoFactRegressCalc.ViewModels
         private ICommand? _сalcFromExelCommand;
 
 
-        public ICommand СalcFromExelCommand =>
+        public ICommand СalcFromExсelCommand =>
             _сalcFromExelCommand ?? new LambdaCommandAsync(OnCalcFromExelCommandExecuted, CanCalcFromExelCommandExecute);
 
         private async Task OnCalcFromExelCommandExecuted(object arg)
@@ -80,7 +86,16 @@ namespace TwoFactRegressCalc.ViewModels
                 MessageBox.Show("Error. Нету коэффицентов");
             if (resultCoefPressure!.Any() && resCoefTemp!.Any())
             {
-                await _writer.Write(new List<double[]>() { resultCoefPressure.ToArray(), resCoefTemp.ToArray() }, _filedialog.FilePath);
+                var p = resultCoefPressure.ToArray();
+                var t = resCoefTemp.ToArray();
+                if(p.Length != 16 || t.Length != 9)
+                    return;
+                Coefficients coefficients = new(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15],
+                    t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]);
+
+                await _writer.Write(new List<double[]>() { p, t }, _filedialog.FilePath);
+             
+                await _fileCreator.CreateAsync(_filedialog.FilePath, coefficients);
                 MessageBox.Show($" ΔP_max = {сheckResult.Max()};\n ΔT_max = {resultsTemps.Max()};", "Успех!");
             }
             else MessageBox.Show("Error. Нету коэффицентов");
