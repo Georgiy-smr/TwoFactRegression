@@ -76,6 +76,13 @@ namespace TwoFactRegressCalc.ViewModels
             _filedialog.Filter = "Excel workbooks (*.xlsx)|*.xlsx";
             if (!_filedialog.OpenFileDialog()) 
                 return;
+            
+            string combine = Path.Combine(
+                FilePath, SerialText ?? Path.GetFileNameWithoutExtension(_filedialog.FilePath));
+
+            if (ShowUserDialogIfFilePathIsExists(combine))
+                return;
+
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Pressure).ToListAsync() is not
                 { Count: > 15 } dataPressure)
                 return;
@@ -101,14 +108,37 @@ namespace TwoFactRegressCalc.ViewModels
 
                 await _writer.Write(new List<double[]>() { p, t }, _filedialog.FilePath);
 
-                string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(_filedialog.FilePath);
-                string combine = Path.Combine(FilePath, SerialText?? fileNameWithoutExtension);
+
                 await _fileCreator.CreateAsync(combine, coefficients);
                 MessageBox.Show($" ΔP_max = {сheckResult.Max()};\n ΔT_max = {resultsTemps.Max()};", "Успех!");
             }
             else MessageBox.Show("Error. Нету коэффицентов");
 
         }
+
+        /// <summary>
+        /// Продолжить выполнение если файл существет
+        /// </summary>
+        /// <param name="combine"></param>
+        /// <returns></returns>
+        private static bool ShowUserDialogIfFilePathIsExists(string combine)
+        {
+            if (!File.Exists(combine)) return false;
+            var msgBox = MessageBox.Show(
+                $"Перезаписать уже существующтй путь? ({combine})",
+                "Перезаписать файл",
+                MessageBoxButton.YesNoCancel
+            );
+            switch (msgBox)
+            {
+                case MessageBoxResult.None:
+                case MessageBoxResult.Cancel:
+                case MessageBoxResult.No:
+                    return true;
+            }
+            return false;
+        }
+
         private double CalcResTemp(DataTwoFact data, double[] resultCheckedCoef)
         {
             double res = 0;
@@ -276,9 +306,9 @@ namespace TwoFactRegressCalc.ViewModels
             }
         }
 
-        private string _serialText;
+        private string? _serialText;
 
-        public string SerialText
+        public string? SerialText
         {
             get => _serialText;
             set => Set(ref _serialText, value);
