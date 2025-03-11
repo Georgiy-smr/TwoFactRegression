@@ -125,9 +125,10 @@ namespace TwoFactRegressCalc.ViewModels
         {
             if (!File.Exists(combine)) return false;
             var msgBox = MessageBox.Show(
-                $"Перезаписать уже существующтй путь? ({combine})",
-                "Перезаписать файл",
-                MessageBoxButton.YesNoCancel
+                $"Выбранный файл {combine} уже существует.\n Перезаписать?",
+                "Совпадение названий файла",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Question
             );
             switch (msgBox)
             {
