@@ -2,13 +2,13 @@
 using Regression.Two_factor_regression.Implements;
 using Regression.Two_factor_regression.Interfaces;
 
-namespace TwoFactRegressCalc.Infrastructure.DI.Services.Regression.TwoFactRegressThidOrder;
+namespace TwoFactRegressCalc.Infrastructure.DI.Services.Regression.TwoFact;
 
-internal class RegressionThidOrderPolynomial : IRegression<DataTwoFact>
+internal class QrFactorizedAlgorithm : IRegression<DataTwoFact>
 {
-    public RegressionThidOrderPolynomial()
+    public QrFactorizedAlgorithm()
     {
-        _serviceRegression = new ApproximationService(new Solver(), new RowParser(), new DerivativeCalculator());
+        _serviceRegression = new ApproximationService(new SolverMathNet(), new RowParser(), new DerivativeCalculator());
     }
     private readonly global::Regression.Two_factor_regression.Interfaces.Services.IRegressionAnalysisService _serviceRegression;
 

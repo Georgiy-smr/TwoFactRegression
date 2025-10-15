@@ -11,7 +11,7 @@ using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
 using TwoFactRegressCalc.Infrastructure.DI.Services.JsonFileService;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
-using TwoFactRegressCalc.Infrastructure.DI.Services.Regression.TwoFactRegressThidOrder;
+using TwoFactRegressCalc.Infrastructure.DI.Services.Regression.TwoFact;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Writer;
 using TwoFactRegressCalc.Models;
 using TwoFactRegressCalc.ViewModels;
@@ -38,7 +38,11 @@ namespace TwoFactRegressCalc.Infrastructure.DI
 
 
         internal static IServiceCollection Regression(this ServiceCollection service) =>
-            service.AddTransient<IRegression<DataTwoFact>, RegressionThidOrderPolynomial>();
+            service
+                .AddTransient<IRegression<DataTwoFact>, QrFactorizedAlgorithm>()
+                .AddTransient<IRegression<DataTwoFact>, GausAlgorithm>()
+                .AddTransient<IRegressionService, AnalyzeFewRegression>();
+        
 
         internal static IServiceCollection FilledExcelDoc(this ServiceCollection service) =>
             service.AddTransient<IWriteData<IEnumerable<double[]>>, ExcelFillPressureAndTempData>();

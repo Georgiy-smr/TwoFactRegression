@@ -4,6 +4,8 @@ using System.Data;
 using System.IO;
 using System.Reflection;
 using System.Windows;
+using Microsoft.Extensions.Logging;
+using Serilog;
 using TwoFactRegressCalc.Infrastructure.DI;
 using TwoFactRegressCalc.ViewModels;
 
@@ -33,6 +35,18 @@ namespace TwoFactRegressCalc
             services.FilledExcelDoc();
             services.FileCreator();
             services.JsonFileService();
+
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.File("logs/log.txt", rollingInterval: RollingInterval.Day)
+                .CreateLogger();
+
+            services
+                .AddLogging(builder =>
+                {
+                    builder.ClearProviders(); // Удаляем стандартные провайдеры логирования
+                    builder.AddSerilog(Log.Logger); // Добавляем Serilog как провайдер логирования
+                });
             return services;
         }
 

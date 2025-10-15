@@ -1,15 +1,7 @@
-﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Diagnostics.Metrics;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Input;
-using OfficeOpenXml.FormulaParsing.Excel.Functions;
+using Microsoft.Extensions.Logging;
 using Regression.Two_factor_regression;
 using TwoFactRegressCalc.Extansions.TwoFactExpression;
 using TwoFactRegressCalc.Infrastructure.Commands.Base;
@@ -22,18 +14,28 @@ using TwoFactRegressCalc.Models;
 using TwoFactRegressCalc.ViewModels.Base;
 using Microsoft.WindowsAPICodePack.Dialogs;
 using TwoFactRegressCalc.Infrastructure.DI.Services.JsonFileService;
+using Serilog;
 
 namespace TwoFactRegressCalc.ViewModels
 {
     internal class MainViewModel : ViewModel
     {
+        private readonly IReadData<DataTwoFact> _dataExcelReader;
+        private readonly IDialogService _filedialog;
+        private readonly IRegressionService _regression;
+        private readonly IWriteData<IEnumerable<double[]>> _writer;
+        private readonly ICreate<Coefficients> _fileCreator;
+        private readonly IJsonFileService<Config> _configService;
+        private readonly ILogger<MainViewModel> _logger;
+
         public MainViewModel(
             IReadData<DataTwoFact> dataExcelReader, 
-            IDialogService dialog, 
-            IRegression<DataTwoFact> regression,
+            IDialogService dialog,
+            IRegressionService regression,
             IWriteData<IEnumerable<double[]>> writer,
             ICreate<Coefficients> fileCreator,
-            IJsonFileService<Config> configService)
+            IJsonFileService<Config> configService,
+            ILogger<MainViewModel> logger)
         {
             _dataExcelReader = dataExcelReader;
             _filedialog = dialog;
@@ -41,13 +43,9 @@ namespace TwoFactRegressCalc.ViewModels
             _writer = writer;
             _fileCreator = fileCreator;
             _configService = configService;
+            _logger = logger;
         }
-        private readonly IReadData<DataTwoFact> _dataExcelReader;
-        private readonly IDialogService _filedialog;
-        private readonly IRegression<DataTwoFact> _regression;
-        private readonly IWriteData<IEnumerable<double[]>> _writer;
-        private readonly ICreate<Coefficients> _fileCreator;
-        private readonly IJsonFileService<Config> _configService;
+
         private Config _config;
         /// <summary>
         /// summary
@@ -73,7 +71,7 @@ namespace TwoFactRegressCalc.ViewModels
 
         private async Task OnCalcFromExelCommandExecuted(object arg)
         {
-            _filedialog.Filter = "Excel workbooks (*.xlsx)|*.xlsx";
+            _filedialog.Filter = _filedialog.Filter = "Excel workbooks (*.xlsx;*.xls;*.ods)|*.xlsx;*.xls;*.ods|Excel 2003 (*.xls)|*.xls|OpenDocument Spreadsheet (*.ods)|*.ods";
             if (!_filedialog.OpenFileDialog()) 
                 return;
             
@@ -86,15 +84,11 @@ namespace TwoFactRegressCalc.ViewModels
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Pressure).ToListAsync() is not
                 { Count: > 15 } dataPressure)
                 return;
-            var pressurePolynimial = dataPressure.CreateThirdOrderPolynomialExpression();
-            var resultCoefPressure = _regression.CalcCoefs(pressurePolynimial);
-            var сheckResult = dataPressure.Select(x1x2y => CalcResDelta(x1x2y, resultCoefPressure.ToArray())).ToList();
+            var resultCoefPressure = _regression.Get(dataPressure, data => data.CreateThirdOrderPolynomialExpression());
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Temperature).ToListAsync() is
                 not { Count: > 8 } dataTemp)
                 return;
-            var polyTemp = dataTemp.CreateTwoOrderPolynomialExpression();
-            var resCoefTemp = _regression.CalcCoefs(polyTemp);
-            var resultsTemps = dataTemp.Select(x1x2y => CalcResTemp(x1x2y, resCoefTemp.ToArray())).ToList();
+            var resCoefTemp = _regression.Get(dataTemp, data => data.CreateTwoOrderPolynomialExpression());
             if (resultCoefPressure is null || resCoefTemp is null)
                 MessageBox.Show("Error. Нету коэффицентов");
             if (resultCoefPressure!.Any() && resCoefTemp!.Any())
@@ -107,10 +101,7 @@ namespace TwoFactRegressCalc.ViewModels
                     t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]);
 
                 await _writer.Write(new List<double[]>() { p, t }, _filedialog.FilePath);
-
-
                 await _fileCreator.CreateAsync(combine, coefficients);
-                MessageBox.Show($" ΔP_max = {сheckResult.Max()};\n ΔT_max = {resultsTemps.Max()};", "Успех!");
             }
             else MessageBox.Show("Error. Нету коэффицентов");
 
@@ -140,130 +131,9 @@ namespace TwoFactRegressCalc.ViewModels
             return false;
         }
 
-        private double CalcResTemp(DataTwoFact data, double[] resultCheckedCoef)
-        {
-            double res = 0;
-            for (int i = 0; i < resultCheckedCoef.Count(); i++)
-            {
-                switch (i)
-                {
-                    case 0:
-                        res += resultCheckedCoef[i];
-                        break;
-                    case 1:
-                        //a1* item.X2
-                        res += resultCheckedCoef[i] * data.X2;
-                        break;
-                    case 2:
-                        //a2* item.X2* item.X2 +
-                        res += resultCheckedCoef[i] * data.X2 * data.X2;
-                        break;
-                    case 3:
-                        //a3* item.X1 +
-                        res += resultCheckedCoef[i] * data.X1;
-                        break;
-                    case 4:
-                        //   a4 * item.X1 * item.X1 +
-                        res += resultCheckedCoef[i] * data.X1 * data.X1;
-                        break;
-                    case 5:
-                        //a5 * item.X1 * item.X2 +
-                        res += resultCheckedCoef[i] * data.X1 * data.X2;
-                        break;
-                    case 6:
-                        // a6* item.X2* item.X1* item.X1 +
-                        res += resultCheckedCoef[i] * data.X2 * data.X1 * data.X1;
-                        break;
-                    case 7:
-                        //a7* item.X2* item.X2* item.X1 +
-                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X1;
-                        break;
-                    case 8:
-                        //a8* item.X1* item.X1* item.X2* item.X2 +
-                        res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X2 * data.X2;
-                        break;
-                }
-            }
-            return Math.Abs(data.Y - res);
-        }
-        private double CalcResDelta(DataTwoFact data, double[] resultCheckedCoef)
-        {
-            double res = 0;
-            for (int i = 0; i < resultCheckedCoef.Count(); i++)
-            {
-                switch (i)
-                {
-                    case 0:
-                        res += resultCheckedCoef[i];
-                        break;
-                    case 1:
-                        //a1* item.X2
-                        res += resultCheckedCoef[i] * data.X2;
-                        break;
-                    case 2:
-                        //a2* item.X2* item.X2 +
-                        res += resultCheckedCoef[i] * data.X2 * data.X2;
-                        break;
-                    case 3:
-                        //a3* item.X1 +
-                        res += resultCheckedCoef[i] * data.X1;
-                        break;
-                    case 4:
-                        //   a4 * item.X1 * item.X1 +
-                        res += resultCheckedCoef[i] * data.X1 * data.X1;
-                        break;
-                    case 5:
-                        //a5 * item.X1 * item.X2 +
-                        res += resultCheckedCoef[i] * data.X1 * data.X2;
-                        break;
-                    case 6:
-                        // a6* item.X2* item.X1* item.X1 +
-                        res += resultCheckedCoef[i] * data.X2 * data.X1 * data.X1;
-                        break;
-                    case 7:
-                        //a7* item.X2* item.X2* item.X1 +
-                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X1;
-                        break;
-                    case 8:
-                        //a8* item.X1* item.X1* item.X2* item.X2 +
-                        res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X2 * data.X2;
-                        break;
-                    case 9:
-                        //a9* item.X1* item.X1* item.X1 +
-                        res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X1;
-                        break;
-                    case 10:
-                        //a10* item.X2* item.X1* item.X1* item.X1 +
-                        res += resultCheckedCoef[i] * data.X2 * data.X1 * data.X1 * data.X1;
-                        break;
-                    case 11:
-                        //a11* item.X2* item.X2* item.X1* item.X1* item.X1 +
-                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X1 * data.X1 * data.X1;
-                        break;
-                    case 12:
-                        //a12* item.X2* item.X2* item.X2 +
-                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X2;
-                        break;
-                    case 13:
-                        //a13* item.X2* item.X2* item.X2* item.X1 +
-                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X2 * data.X1;
-                        break;
-                    case 14:
-                        //a14* item.X2* item.X2* item.X2* item.X1* item.X1 +
-                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X2 * data.X1 * data.X1;
-                        break;
-                    case 15:
-                        //a15* item.X2* item.X2* item.X2* item.X1* item.X1* item.X1);
-                        res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X2 * data.X1 * data.X1 * data.X1;
-                        break;
-                }
-            }
-            return Math.Abs(data.Y - res);
-        }
-	//Test
+        
         private bool CanCalcFromExelCommandExecute(object p)
         {
-		
             return true;
         }
 
@@ -364,6 +234,7 @@ namespace TwoFactRegressCalc.ViewModels
         {
             _config = await _configService.ReadAsync();
             FilePath = _config.FilePath;
+            _logger.LogError("TEST");
         }
 
         #endregion
