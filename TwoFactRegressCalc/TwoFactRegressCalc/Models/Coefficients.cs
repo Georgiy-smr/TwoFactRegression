@@ -21,6 +21,15 @@ public class Coefficients
     public string a13 { get; set; }
     public string a14 { get; set; }
     public string a15 { get; set; }
+    public string a16 { get; set; }
+    public string a17 { get; set; }
+    public string a18 { get; set; }
+    public string a19 { get; set; }
+    public string a20 { get; set; }
+    public string a21 { get; set; }
+    public string a22 { get; set; }
+    public string a23 { get; set; }
+    public string a24 { get; set; }
 
     public string b0 { get; set; }
     public string b1 { get; set; }
@@ -34,8 +43,17 @@ public class Coefficients
 
 
 
-    public Coefficients(double a0, double a1, double a2, double a3, double a4, double a5, double a6, double a7, double a8, double a9, double a10, double a11, double a12, double a13, double a14, double a15, double b0, double b1, double b2, double b3, double b4, double b5, double b6, double b7, double b8)
+    public Coefficients(double a0, double a1, double a2, double a3, double a4, double a5, double a6, double a7, double a8, double a9, double a10, double a11, double a12, double a13, double a14, double a15, double a16, double a17, double a18, double a19, double a20, double a21, double a22, double a23, double a24,  double b0, double b1, double b2, double b3, double b4, double b5, double b6, double b7, double b8)
     {
+        this.a16 = a16.ToString("F25", CultureInfo.InvariantCulture);
+        this.a17 = a17.ToString("F25", CultureInfo.InvariantCulture);
+        this.a18 = a18.ToString("F25", CultureInfo.InvariantCulture);
+        this.a19 = a19.ToString("F25", CultureInfo.InvariantCulture);
+        this.a20 = a20.ToString("F25", CultureInfo.InvariantCulture);
+        this.a21 = a21.ToString("F25", CultureInfo.InvariantCulture);
+        this.a22 = a22.ToString("F25", CultureInfo.InvariantCulture);
+        this.a23 = a23.ToString("F25", CultureInfo.InvariantCulture);
+        this.a24 = a24.ToString("F25", CultureInfo.InvariantCulture);
         this.a0 = a0.ToString("F25", CultureInfo.InvariantCulture);
         this.a1 = a1.ToString("F25", CultureInfo.InvariantCulture);
         this.a2 = a2.ToString("F25", CultureInfo.InvariantCulture);

@@ -179,6 +179,51 @@ internal class AnalyzeFewRegression : IRegressionService
                 }
             }
         }
+        else if (resultCheckedCoef.Length == 25)
+        {
+            for (int i = 0; i < resultCheckedCoef.Count(); i++)
+            {
+                switch (i)
+                {
+                    case 0: res += resultCheckedCoef[i]; break;
+                    case 1: res += resultCheckedCoef[i] * data.X2; break;
+                    // X2
+                    case 2: res += resultCheckedCoef[i] * data.X2 * data.X2; break;
+                    // X2^2
+                    case 3: res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X2; break;
+                    // X2^3
+                    case 4: res += resultCheckedCoef[i] * data.X2 * data.X2 * data.X2 * data.X2; break;
+                    // X2^4
+                               
+                    case 5: res += resultCheckedCoef[i] * data.X1; break;
+                    // X1
+                    case 6: res += resultCheckedCoef[i] * data.X1 * data.X2; break;
+                    // X1*X2
+                    case 7: res += resultCheckedCoef[i] * data.X1 * data.X2 * data.X2; break;
+                    // X1*X2^2
+                    case 8: res += resultCheckedCoef[i] * data.X1 * data.X2 * data.X2 * data.X2; break; // X1*X2^3
+                    case 9: res += resultCheckedCoef[i] * data.X1 * data.X2 * data.X2 * data.X2 * data.X2; break; // X1*X2^4
+                                                                                                                  // i = 2 (X1^2)
+                    case 10: res += resultCheckedCoef[i] * data.X1 * data.X1; break; // X1^2
+                    case 11: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X2; break; // X1^2*X2
+                    case 12: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X2 * data.X2; break; // X1^2*X2^2
+                    case 13: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X2 * data.X2 * data.X2; break; // X1^2*X2^3
+                    case 14: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X2 * data.X2 * data.X2 * data.X2; break; // X1^2*X2^4
+                                                                                                                             // i = 3 (X1^3)
+                    case 15: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X1; break; // X1^3
+                    case 16: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X1 * data.X2; break; // X1^3*X2
+                    case 17: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X1 * data.X2 * data.X2; break; // X1^3*X2^2
+                    case 18: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X1 * data.X2 * data.X2 * data.X2; break; // X1^3*X2^3
+                    case 19: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X1 * data.X2 * data.X2 * data.X2 * data.X2; break; // X1^3*X2^4
+                                                                                                                                       // i = 4 (X1^4)
+                    case 20: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X1 * data.X1; break; // X1^4
+                    case 21: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X1 * data.X1 * data.X2; break; // X1^4*X2
+                    case 22: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X1 * data.X1 * data.X2 * data.X2; break; // X1^4*X2^2
+                    case 23: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X1 * data.X1 * data.X2 * data.X2 * data.X2; break; // X1^4*X2^3
+                    case 24: res += resultCheckedCoef[i] * data.X1 * data.X1 * data.X1 * data.X1 * data.X2 * data.X2 * data.X2 * data.X2; break; // X1^4*X2^4
+                }
+            }
+        }
         return Math.Abs(data.Y - res);
     }
 

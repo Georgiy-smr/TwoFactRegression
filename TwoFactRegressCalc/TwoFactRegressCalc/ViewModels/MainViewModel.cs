@@ -84,7 +84,7 @@ namespace TwoFactRegressCalc.ViewModels
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Pressure).ToListAsync() is not
                 { Count: > 15 } dataPressure)
                 return;
-            var resultCoefPressure = _regression.Get(dataPressure, data => data.CreateThirdOrderPolynomialExpression());
+            var resultCoefPressure = _regression.Get(dataPressure, data => data.CreateFourthOrderPolynomialExpression());
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Temperature).ToListAsync() is
                 not { Count: > 8 } dataTemp)
                 return;
@@ -95,9 +95,9 @@ namespace TwoFactRegressCalc.ViewModels
             {
                 var p = resultCoefPressure.ToArray();
                 var t = resCoefTemp.ToArray();
-                if(p.Length != 16 || t.Length != 9)
+                if(p.Length != 25 || t.Length != 9)
                     return;
-                Coefficients coefficients = new(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15],
+                Coefficients coefficients = new(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19], p[20], p[21], p[22], p[23], p[24],
                     t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]);
 
                 await _writer.Write(new List<double[]>() { p, t }, _filedialog.FilePath);
