@@ -12,6 +12,8 @@ internal class QrFactorizedAlgorithm : IRegression<DataTwoFact>
     }
     private readonly global::Regression.Two_factor_regression.Interfaces.Services.IRegressionAnalysisService _serviceRegression;
 
+    public string Name => "QR decomposition";
+
     public IEnumerable<double> CalcCoefs(IPolynomialExpression regressionData)
     {
         return _serviceRegression.GetValues(regressionData);

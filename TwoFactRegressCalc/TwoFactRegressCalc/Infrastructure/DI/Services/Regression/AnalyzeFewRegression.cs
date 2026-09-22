@@ -30,17 +30,19 @@ internal class AnalyzeFewRegression : IRegressionService
             if (coefs.Any(double.IsNaN))
                 continue;
 
-            results[regression.GetType().Name] = new TwoFactorRegressionResult(coefs, dataList);
+            results[regression.Name] = new TwoFactorRegressionResult(coefs, dataList);
         }
 
         foreach (var basis in bases)
         {
+            // PolynomialLeastSquaresSolver fits via MathNet's MultipleRegression.QR internally,
+            // so it's QR too - just applied to a centered/scaled design matrix per basis, not the normal equations.
             var solver = new PolynomialLeastSquaresSolver(basis);
             var coefs = solver.GetValues(dataList).ToArray();
             if (coefs.Any(double.IsNaN))
                 continue;
 
-            results[$"{solver.GetType().Name} ({basis.GetType().Name})"] = new TwoFactorRegressionResult(coefs, dataList);
+            results[$"QR ({basis.GetType().Name})"] = new TwoFactorRegressionResult(coefs, dataList);
         }
 
         if (results.Count == 0)

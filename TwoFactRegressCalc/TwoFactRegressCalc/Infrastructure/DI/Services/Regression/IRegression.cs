@@ -5,5 +5,7 @@ namespace TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 
 internal interface IRegression<in T> where T : struct
 {
+    string Name { get; }
+
     IEnumerable<double> CalcCoefs(IPolynomialExpression regressionData);
 }
