@@ -3,7 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Regression.Two_factor_regression;
-using TwoFactRegressCalc.Extansions.TwoFactExpression;
+using Regression.Two_factor_regression.Implements;
 using TwoFactRegressCalc.Infrastructure.Commands.Base;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Creator;
 using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
@@ -84,11 +84,17 @@ namespace TwoFactRegressCalc.ViewModels
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Pressure).ToListAsync() is not
                 { Count: > 15 } dataPressure)
                 return;
-            var resultCoefPressure = _regression.Get(dataPressure, data => data.CreateThirdOrderPolynomialExpression());
+            var resultCoefPressure = _regression.Get(
+                dataPressure,
+                data => data.CreateThirdOrderPolynomialExpression(),
+                new ThirdOrderBasisExponents());
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Temperature).ToListAsync() is
                 not { Count: > 8 } dataTemp)
                 return;
-            var resCoefTemp = _regression.Get(dataTemp, data => data.CreateTwoOrderPolynomialExpression());
+            var resCoefTemp = _regression.Get(
+                dataTemp,
+                data => data.CreateTwoOrderPolynomialExpression(),
+                new SecondOrderBasisExponents());
             if (resultCoefPressure is null || resCoefTemp is null)
                 MessageBox.Show("Error. Нету коэффицентов");
             if (resultCoefPressure!.Any() && resCoefTemp!.Any())
