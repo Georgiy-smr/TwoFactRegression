@@ -44,7 +44,7 @@ internal class AnalyzeFewRegression : IRegressionService
             return Array.Empty<double>();
         }
 
-        var best = results.OrderBy(kv => kv.Value.MaxError).First();
+        var best = results.MinBy(kv => kv.Value.MaxError);
 
         MessageBox.Show(
             $"MaxError: {best.Value.MaxError}\n{string.Join("\n", best.Value.Coefficients.Select((x, i) => $"a{i} : {x}"))}",
