@@ -8,5 +8,5 @@ internal interface IRegressionService
     IEnumerable<double> Get(
         IEnumerable<DataTwoFact> data,
         Func<IEnumerable<DataTwoFact>, IPolynomialExpression> func,
-        IBasisExponents basis);
+        IEnumerable<IBasisExponents> bases);
 }

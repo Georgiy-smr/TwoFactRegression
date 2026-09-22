@@ -18,10 +18,10 @@ internal class AnalyzeFewRegression : IRegressionService
     public IEnumerable<double> Get(
         IEnumerable<DataTwoFact> data,
         Func<IEnumerable<DataTwoFact>, IPolynomialExpression> func,
-        IBasisExponents basis)
+        IEnumerable<IBasisExponents> bases)
     {
         var dataList = data.ToList();
-        var results = new Dictionary<Type, TwoFactorRegressionResult>();
+        var results = new Dictionary<string, TwoFactorRegressionResult>();
 
         var expression = func(dataList);
         foreach (var regression in _regressions)
@@ -30,13 +30,18 @@ internal class AnalyzeFewRegression : IRegressionService
             if (coefs.Any(double.IsNaN))
                 continue;
 
-            results[regression.GetType()] = new TwoFactorRegressionResult(coefs, dataList);
+            results[regression.GetType().Name] = new TwoFactorRegressionResult(coefs, dataList);
         }
 
-        var solver = new PolynomialLeastSquaresSolver(basis);
-        var leastSquaresCoefs = solver.GetValues(dataList).ToArray();
-        if (!leastSquaresCoefs.Any(double.IsNaN))
-            results[solver.GetType()] = new TwoFactorRegressionResult(leastSquaresCoefs, dataList);
+        foreach (var basis in bases)
+        {
+            var solver = new PolynomialLeastSquaresSolver(basis);
+            var coefs = solver.GetValues(dataList).ToArray();
+            if (coefs.Any(double.IsNaN))
+                continue;
+
+            results[$"{solver.GetType().Name} ({basis.GetType().Name})"] = new TwoFactorRegressionResult(coefs, dataList);
+        }
 
         if (results.Count == 0)
         {
@@ -48,7 +53,7 @@ internal class AnalyzeFewRegression : IRegressionService
 
         MessageBox.Show(
             $"MaxError: {best.Value.MaxError}\n{string.Join("\n", best.Value.Coefficients.Select((x, i) => $"a{i} : {x}"))}",
-            best.Key.Name,
+            best.Key,
             MessageBoxButton.OK);
 
         return best.Value.Coefficients;
