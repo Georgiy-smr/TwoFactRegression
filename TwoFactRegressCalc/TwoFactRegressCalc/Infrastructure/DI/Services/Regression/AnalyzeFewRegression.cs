@@ -35,14 +35,15 @@ internal class AnalyzeFewRegression : IRegressionService
 
         foreach (var basis in bases)
         {
-            // PolynomialLeastSquaresSolver fits via MathNet's MultipleRegression.QR internally,
-            // so it's QR too - just applied to a centered/scaled design matrix per basis, not the normal equations.
+            // PolynomialLeastSquaresSolver fits via MathNet's MultipleRegression.QR on the
+            // (centered/scaled) design matrix directly, unlike QrFactorizedAlgorithm which
+            // QR-solves the normal equations - distinct enough numerically to label separately.
             var solver = new PolynomialLeastSquaresSolver(basis);
             var coefs = solver.GetValues(dataList).ToArray();
             if (coefs.Any(double.IsNaN))
                 continue;
 
-            results[$"QR ({basis.GetType().Name})"] = new TwoFactorRegressionResult(coefs, dataList);
+            results[$"QR (design matrix, {basis.GetType().Name})"] = new TwoFactorRegressionResult(coefs, dataList);
         }
 
         if (results.Count == 0)
