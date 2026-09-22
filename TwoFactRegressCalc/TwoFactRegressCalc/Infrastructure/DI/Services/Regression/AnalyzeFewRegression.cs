@@ -18,7 +18,7 @@ internal class AnalyzeFewRegression : IRegressionService
     public IEnumerable<double> Get(
         IEnumerable<DataTwoFact> data,
         Func<IEnumerable<DataTwoFact>, IPolynomialExpression> func,
-        IEnumerable<IBasisExponents> bases)
+        params IBasisExponents[] bases)
     {
         var dataList = data.ToList();
         var results = new Dictionary<string, TwoFactorRegressionResult>();

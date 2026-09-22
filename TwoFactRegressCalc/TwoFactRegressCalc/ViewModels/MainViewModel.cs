@@ -88,14 +88,14 @@ namespace TwoFactRegressCalc.ViewModels
             var resultCoefPressure = _regression.Get(
                 dataPressure,
                 data => data.CreateThirdOrderPolynomialExpression(),
-                new IBasisExponents[] { new ThirdOrderBasisExponents() });
+                new ThirdOrderBasisExponents());
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Temperature).ToListAsync() is
                 not { Count: > 8 } dataTemp)
                 return;
             var resCoefTemp = _regression.Get(
                 dataTemp,
                 data => data.CreateTwoOrderPolynomialExpression(),
-                new IBasisExponents[] { new SecondOrderBasisExponents() });
+                new SecondOrderBasisExponents());
             if (resultCoefPressure is null || resCoefTemp is null)
                 MessageBox.Show("Error. Нету коэффицентов");
             if (resultCoefPressure!.Any() && resCoefTemp!.Any())
