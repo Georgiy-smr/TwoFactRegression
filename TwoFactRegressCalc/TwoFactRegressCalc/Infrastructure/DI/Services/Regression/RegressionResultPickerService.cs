@@ -5,11 +5,14 @@ namespace TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 
 public class RegressionResultPickerService : IRegressionResultPicker
 {
-    public TwoFactorRegressionResult? Pick(IEnumerable<TwoFactorRegressionResult> candidates, string physicalValueLabel)
+    public TwoFactorRegressionResult Pick(IEnumerable<TwoFactorRegressionResult> candidates, string physicalValueLabel)
     {
         var viewModel = new RegressionResultPickerViewModel(candidates, physicalValueLabel);
         var window = new RegressionResultPickerWindow { DataContext = viewModel };
 
-        return window.ShowDialog() == true ? viewModel.SelectedResult : null;
+        if (window.ShowDialog() != true || viewModel.SelectedResult is not { } selectedResult)
+            throw new RegressionSelectionCancelledException(physicalValueLabel);
+
+        return selectedResult;
     }
 }

@@ -93,9 +93,16 @@ namespace TwoFactRegressCalc.ViewModels
                 MessageBox.Show("Error. Нету коэффицентов");
                 return;
             }
-            var selectedPressure = _resultPicker.Pick(pressureCandidates, "Pressure");
-            if (selectedPressure is null)
+
+            TwoFactorRegressionResult selectedPressure;
+            try
+            {
+                selectedPressure = _resultPicker.Pick(pressureCandidates, "Pressure");
+            }
+            catch (RegressionSelectionCancelledException)
+            {
                 return;
+            }
 
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Temperature).ToListAsync() is
                 not { Count: > 8 } dataTemp)
@@ -107,9 +114,16 @@ namespace TwoFactRegressCalc.ViewModels
                 MessageBox.Show("Error. Нету коэффицентов");
                 return;
             }
-            var selectedTemperature = _resultPicker.Pick(temperatureCandidates, "Temperature");
-            if (selectedTemperature is null)
+
+            TwoFactorRegressionResult selectedTemperature;
+            try
+            {
+                selectedTemperature = _resultPicker.Pick(temperatureCandidates, "Temperature");
+            }
+            catch (RegressionSelectionCancelledException)
+            {
                 return;
+            }
 
             var sensorCoefficients = new SensorCoefficientsResult(selectedPressure.Coefficients, selectedTemperature.Coefficients);
 
