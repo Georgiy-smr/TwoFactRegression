@@ -97,7 +97,7 @@ namespace TwoFactRegressCalc.ViewModels
             TwoFactorRegressionResult selectedPressure;
             try
             {
-                selectedPressure = _resultPicker.Pick(pressureCandidates, "Pressure");
+                selectedPressure = _resultPicker.Pick(pressureCandidates, PhysicalValue.Pressure);
             }
             catch (RegressionSelectionCancelledException)
             {
@@ -118,7 +118,7 @@ namespace TwoFactRegressCalc.ViewModels
             TwoFactorRegressionResult selectedTemperature;
             try
             {
-                selectedTemperature = _resultPicker.Pick(temperatureCandidates, "Temperature");
+                selectedTemperature = _resultPicker.Pick(temperatureCandidates, PhysicalValue.Temperature);
             }
             catch (RegressionSelectionCancelledException)
             {

@@ -1,12 +1,14 @@
+using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
+
 namespace TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 
 public sealed class RegressionSelectionCancelledException : Exception
 {
-    public RegressionSelectionCancelledException(string physicalValueLabel)
-        : base($"Regression model selection was cancelled for {physicalValueLabel}.")
+    public RegressionSelectionCancelledException(PhysicalValue physicalValue)
+        : base($"Regression model selection was cancelled for {physicalValue}.")
     {
-        PhysicalValueLabel = physicalValueLabel;
+        PhysicalValue = physicalValue;
     }
 
-    public string PhysicalValueLabel { get; }
+    public PhysicalValue PhysicalValue { get; }
 }
