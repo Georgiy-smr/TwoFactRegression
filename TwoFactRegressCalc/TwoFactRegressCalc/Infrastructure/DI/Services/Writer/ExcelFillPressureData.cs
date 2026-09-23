@@ -12,9 +12,18 @@ public class ExcelFillPressureAndTempData : IWriteData<AllSensorCoefficients>
         using var excelPackage = new ExcelPackage(new FileInfo(filePath));
         if (excelPackage.Workbook.Worksheets.FirstOrDefault() is not { } sheetMainParams)
             throw new NotImplementedException();
+        await ClearPreviousCoefficients(sheetMainParams);
         await FillPressure(sheetMainParams, data.PressureCoefficients);
         await FillTemperature(sheetMainParams, data.TemperatureCoefficients);
         await excelPackage.SaveAsync();
+    }
+    private async Task ClearPreviousCoefficients(ExcelWorksheet worksheet)
+    {
+        await Task.Run(() =>
+        {
+            worksheet.Cells["E2:E26"].Clear();
+            worksheet.Cells["F2:F26"].Clear();
+        }).ConfigureAwait(false);
     }
     private async Task FillPressure(ExcelWorksheet worksheet, IReadOnlyList<double> data)
     {
