@@ -21,7 +21,8 @@ namespace TwoFactRegressCalc.ViewModels
     {
         private readonly IReadData<DataTwoFact> _dataExcelReader;
         private readonly IDialogService _filedialog;
-        private readonly IRegressionService _regression;
+        private readonly IRegressionCalculator _regressionCalculator;
+        private readonly IRegressionResultPicker _resultPicker;
         private readonly IWriteData<AllSensorCoefficients> _writer;
         private readonly ICreate<CoefficientsBySensor> _fileCreator;
         private readonly IJsonFileService<Config> _configService;
@@ -30,7 +31,8 @@ namespace TwoFactRegressCalc.ViewModels
         public MainViewModel(
             IReadData<DataTwoFact> dataExcelReader,
             IDialogService dialog,
-            IRegressionService regression,
+            IRegressionCalculator regressionCalculator,
+            IRegressionResultPicker resultPicker,
             IWriteData<AllSensorCoefficients> writer,
             ICreate<CoefficientsBySensor> fileCreator,
             IJsonFileService<Config> configService,
@@ -38,7 +40,8 @@ namespace TwoFactRegressCalc.ViewModels
         {
             _dataExcelReader = dataExcelReader;
             _filedialog = dialog;
-            _regression = regression;
+            _regressionCalculator = regressionCalculator;
+            _resultPicker = resultPicker;
             _writer = writer;
             _fileCreator = fileCreator;
             _configService = configService;
@@ -83,22 +86,49 @@ namespace TwoFactRegressCalc.ViewModels
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Pressure).ToListAsync() is not
                 { Count: > 15 } dataPressure)
                 return;
-            var resultCoefPressure = _regression.Get(dataPressure);
+
+            var pressureCandidates = _regressionCalculator.Calculate(dataPressure, PhysicalValue.Pressure).ToArray();
+            if (pressureCandidates.Length == 0)
+            {
+                MessageBox.Show("Error. Нету коэффицентов");
+                return;
+            }
+
+            TwoFactorRegressionResult selectedPressure;
+            try
+            {
+                selectedPressure = _resultPicker.Pick(pressureCandidates, PhysicalValue.Pressure);
+            }
+            catch (RegressionSelectionCancelledException)
+            {
+                return;
+            }
+
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Temperature).ToListAsync() is
                 not { Count: > 8 } dataTemp)
                 return;
-            var resCoefTemp = _regression.Get(dataTemp);
-            if (resultCoefPressure is null || resCoefTemp is null)
-                MessageBox.Show("Error. Нету коэффицентов");
-            if (resultCoefPressure!.Any() && resCoefTemp!.Any())
+
+            var temperatureCandidates = _regressionCalculator.Calculate(dataTemp, PhysicalValue.Temperature).ToArray();
+            if (temperatureCandidates.Length == 0)
             {
-                var sensorCoefficients = new SensorCoefficientsResult(resultCoefPressure.ToList(), resCoefTemp.ToList());
-
-                await _writer.Write(sensorCoefficients.GetAllCoefficients(), _filedialog.FilePath);
-                await _fileCreator.CreateAsync(combine, sensorCoefficients.GetCoefficientsBySensor());
+                MessageBox.Show("Error. Нету коэффицентов");
+                return;
             }
-            else MessageBox.Show("Error. Нету коэффицентов");
 
+            TwoFactorRegressionResult selectedTemperature;
+            try
+            {
+                selectedTemperature = _resultPicker.Pick(temperatureCandidates, PhysicalValue.Temperature);
+            }
+            catch (RegressionSelectionCancelledException)
+            {
+                return;
+            }
+
+            var sensorCoefficients = new SensorCoefficientsResult(selectedPressure.Coefficients, selectedTemperature.Coefficients);
+
+            await _writer.Write(sensorCoefficients.GetAllCoefficients(), _filedialog.FilePath);
+            await _fileCreator.CreateAsync(combine, sensorCoefficients.GetCoefficientsBySensor());
         }
 
         /// <summary>

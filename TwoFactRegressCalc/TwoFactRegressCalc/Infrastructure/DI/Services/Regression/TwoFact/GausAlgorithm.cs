@@ -12,7 +12,7 @@ internal class GausAlgorithm : IRegression<DataTwoFact>
     }
     private readonly global::Regression.Two_factor_regression.Interfaces.Services.IRegressionAnalysisService _serviceRegression;
 
-    public string Name => "Gauss";
+    public string Name => "Гаусс";
 
     public IEnumerable<double> CalcCoefs(IPolynomialExpression regressionData)
     {

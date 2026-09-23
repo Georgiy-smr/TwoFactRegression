@@ -38,8 +38,10 @@ namespace TwoFactRegressCalc.Infrastructure.DI
 
 
         internal static IServiceCollection Regression(this ServiceCollection service) =>
-            service.AddTransient<IRegressionService, AnalyzeFewRegression>();
-        
+            service
+                .AddTransient<IRegressionCalculator, RegressionCalculator>()
+                .AddTransient<IRegressionResultPicker, RegressionResultPickerService>();
+
 
         internal static IServiceCollection FilledExcelDoc(this ServiceCollection service) =>
             service.AddTransient<IWriteData<AllSensorCoefficients>, ExcelFillPressureAndTempData>();
