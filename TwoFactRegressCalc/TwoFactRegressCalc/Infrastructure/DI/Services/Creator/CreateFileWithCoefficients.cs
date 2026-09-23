@@ -4,9 +4,9 @@ using TwoFactRegressCalc.Models;
 
 namespace TwoFactRegressCalc.Infrastructure.DI.Services.Creator;
 
-public class CreateFileWithCoefficients : ICreate<Coefficients>
+public class CreateFileWithCoefficients : ICreate<CoefficientsBySensor>
 {
-    public void Create(string filePath, Coefficients data)
+    public void Create(string filePath, CoefficientsBySensor data)
     {
         string json = JsonSerializer.Serialize(data);
         using FileStream fs = new(filePath, FileMode.Create, FileAccess.Write);
@@ -14,7 +14,7 @@ public class CreateFileWithCoefficients : ICreate<Coefficients>
         writer.WriteLine(json);
     }
 
-    public async Task CreateAsync(string filePath, Coefficients data, CancellationToken token = default)
+    public async Task CreateAsync(string filePath, CoefficientsBySensor data, CancellationToken token = default)
     {
         var sPath = Path.ChangeExtension(filePath, null);
         await using FileStream fs = new(sPath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.Asynchronous);

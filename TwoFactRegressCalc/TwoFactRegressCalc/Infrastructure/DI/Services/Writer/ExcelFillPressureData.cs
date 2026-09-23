@@ -1,35 +1,45 @@
 ﻿using System.IO;
 using OfficeOpenXml;
+using TwoFactRegressCalc.Models;
 
 namespace TwoFactRegressCalc.Infrastructure.DI.Services.Writer;
 
-public class ExcelFillPressureAndTempData : IWriteData<IEnumerable<double[]>>
+public class ExcelFillPressureAndTempData : IWriteData<AllSensorCoefficients>
 {
-    public async Task Write(IEnumerable<double[]> data, string filePath)
+    public async Task Write(AllSensorCoefficients data, string filePath)
     {
         ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
         using var excelPackage = new ExcelPackage(new FileInfo(filePath));
         if (excelPackage.Workbook.Worksheets.FirstOrDefault() is not { } sheetMainParams)
             throw new NotImplementedException();
-        await FillPressure(sheetMainParams, data.First());
-        await FillTemperature(sheetMainParams, data.Last());
+        await ClearPreviousCoefficients(sheetMainParams);
+        await FillPressure(sheetMainParams, data.PressureCoefficients);
+        await FillTemperature(sheetMainParams, data.TemperatureCoefficients);
         await excelPackage.SaveAsync();
     }
-    private async Task FillPressure(ExcelWorksheet worksheet, double[] data)
+    private async Task ClearPreviousCoefficients(ExcelWorksheet worksheet)
     {
         await Task.Run(() =>
         {
-            for (int row = 1; row <= data.Length; row++)
+            worksheet.Cells["E2:E26"].Clear();
+            worksheet.Cells["F2:F26"].Clear();
+        }).ConfigureAwait(false);
+    }
+    private async Task FillPressure(ExcelWorksheet worksheet, IReadOnlyList<double> data)
+    {
+        await Task.Run(() =>
+        {
+            for (int row = 1; row <= data.Count; row++)
             {
                 worksheet.Cells[row + 1, 5].Value = data[row - 1];
             }
         }).ConfigureAwait(false);
     }
-    private async Task FillTemperature(ExcelWorksheet worksheet, double[] data)
+    private async Task FillTemperature(ExcelWorksheet worksheet, IReadOnlyList<double> data)
     {
         await Task.Run(() =>
         {
-            for (int row = 1; row <= data.Length; row++)
+            for (int row = 1; row <= data.Count; row++)
             {
                 worksheet.Cells[row + 1, 6].Value = data[row - 1];
             }
