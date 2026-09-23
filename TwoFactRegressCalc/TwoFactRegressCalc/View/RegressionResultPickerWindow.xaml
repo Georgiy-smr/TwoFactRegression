@@ -4,11 +4,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:TwoFactRegressCalc.ViewModels"
+        xmlns:converters="clr-namespace:TwoFactRegressCalc.View.Converters"
         d:DataContext="{d:DesignInstance Type={x:Type vm:RegressionResultPickerViewModel} }"
         Title="{Binding Message}"
         Height="320" Width="460"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
+    <Window.Resources>
+        <converters:RegressionMethodDescriptionConverter x:Key="MethodDescriptionConverter"/>
+    </Window.Resources>
     <Grid Margin="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -27,9 +31,10 @@
                     SelectedItem="{Binding SelectedResult, Mode=TwoWay}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal"
+                                ToolTip="{Binding Name, Converter={StaticResource MethodDescriptionConverter}}">
                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="0 0 8 0"/>
-                        <TextBlock Text="{Binding MaxError, StringFormat='MaxError: {0}'}"/>
+                        <TextBlock Text="{Binding MaxError, StringFormat='MaxError: {0:0.0000}'}"/>
                     </StackPanel>
                 </DataTemplate>
             </ListBox.ItemTemplate>
