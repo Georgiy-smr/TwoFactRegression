@@ -42,10 +42,10 @@ namespace TwoFactRegressCalc.Infrastructure.DI
         
 
         internal static IServiceCollection FilledExcelDoc(this ServiceCollection service) =>
-            service.AddTransient<IWriteData<IEnumerable<double[]>>, ExcelFillPressureAndTempData>();
+            service.AddTransient<IWriteData<AllSensorCoefficients>, ExcelFillPressureAndTempData>();
 
         internal static IServiceCollection FileCreator(this ServiceCollection service) =>
-            service.AddTransient<ICreate<Coefficients>, CreateFileWithCoefficients>();
+            service.AddTransient<ICreate<CoefficientsBySensor>, CreateFileWithCoefficients>();
         internal static IServiceCollection JsonFileService(this ServiceCollection service) =>
             service.AddTransient<IJsonFileService<Config>, SettingsJsonFileService>();
 

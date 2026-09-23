@@ -2,7 +2,7 @@
 
 namespace TwoFactRegressCalc.Models;
 
-public class Coefficients
+public class CoefficientsBySensor
 {
    
     public string a0 { get; set; }
@@ -34,7 +34,7 @@ public class Coefficients
 
 
 
-    public Coefficients(double a0, double a1, double a2, double a3, double a4, double a5, double a6, double a7, double a8, double a9, double a10, double a11, double a12, double a13, double a14, double a15, double b0, double b1, double b2, double b3, double b4, double b5, double b6, double b7, double b8)
+    public CoefficientsBySensor(double a0, double a1, double a2, double a3, double a4, double a5, double a6, double a7, double a8, double a9, double a10, double a11, double a12, double a13, double a14, double a15, double b0, double b1, double b2, double b3, double b4, double b5, double b6, double b7, double b8)
     {
         this.a0 = a0.ToString("F25", CultureInfo.InvariantCulture);
         this.a1 = a1.ToString("F25", CultureInfo.InvariantCulture);

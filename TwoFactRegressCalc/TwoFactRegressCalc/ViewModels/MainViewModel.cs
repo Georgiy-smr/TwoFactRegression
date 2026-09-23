@@ -3,8 +3,6 @@ using System.Windows;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using Regression.Two_factor_regression;
-using Regression.Two_factor_regression.Implements;
-using Regression.Two_factor_regression.Interfaces;
 using TwoFactRegressCalc.Infrastructure.Commands.Base;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Creator;
 using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
@@ -24,17 +22,17 @@ namespace TwoFactRegressCalc.ViewModels
         private readonly IReadData<DataTwoFact> _dataExcelReader;
         private readonly IDialogService _filedialog;
         private readonly IRegressionService _regression;
-        private readonly IWriteData<IEnumerable<double[]>> _writer;
-        private readonly ICreate<Coefficients> _fileCreator;
+        private readonly IWriteData<AllSensorCoefficients> _writer;
+        private readonly ICreate<CoefficientsBySensor> _fileCreator;
         private readonly IJsonFileService<Config> _configService;
         private readonly ILogger<MainViewModel> _logger;
 
         public MainViewModel(
-            IReadData<DataTwoFact> dataExcelReader, 
+            IReadData<DataTwoFact> dataExcelReader,
             IDialogService dialog,
             IRegressionService regression,
-            IWriteData<IEnumerable<double[]>> writer,
-            ICreate<Coefficients> fileCreator,
+            IWriteData<AllSensorCoefficients> writer,
+            ICreate<CoefficientsBySensor> fileCreator,
             IJsonFileService<Config> configService,
             ILogger<MainViewModel> logger)
         {
@@ -85,30 +83,19 @@ namespace TwoFactRegressCalc.ViewModels
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Pressure).ToListAsync() is not
                 { Count: > 15 } dataPressure)
                 return;
-            var resultCoefPressure = _regression.Get(
-                dataPressure,
-                data => data.CreateThirdOrderPolynomialExpression(),
-                new ThirdOrderBasisExponents());
+            var resultCoefPressure = _regression.Get(dataPressure);
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Temperature).ToListAsync() is
                 not { Count: > 8 } dataTemp)
                 return;
-            var resCoefTemp = _regression.Get(
-                dataTemp,
-                data => data.CreateTwoOrderPolynomialExpression(),
-                new SecondOrderBasisExponents());
+            var resCoefTemp = _regression.Get(dataTemp);
             if (resultCoefPressure is null || resCoefTemp is null)
                 MessageBox.Show("Error. Нету коэффицентов");
             if (resultCoefPressure!.Any() && resCoefTemp!.Any())
             {
-                var p = resultCoefPressure.ToArray();
-                var t = resCoefTemp.ToArray();
-                if(p.Length != 16 || t.Length != 9)
-                    return;
-                Coefficients coefficients = new(p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15],
-                    t[0], t[1], t[2], t[3], t[4], t[5], t[6], t[7], t[8]);
+                var sensorCoefficients = new SensorCoefficientsResult(resultCoefPressure.ToList(), resCoefTemp.ToList());
 
-                await _writer.Write(new List<double[]>() { p, t }, _filedialog.FilePath);
-                await _fileCreator.CreateAsync(combine, coefficients);
+                await _writer.Write(sensorCoefficients.GetAllCoefficients(), _filedialog.FilePath);
+                await _fileCreator.CreateAsync(combine, sensorCoefficients.GetCoefficientsBySensor());
             }
             else MessageBox.Show("Error. Нету коэффицентов");
 
