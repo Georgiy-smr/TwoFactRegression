@@ -79,6 +79,19 @@ public class RegressionCalculatorTests
         Assert.All(results, r => Assert.DoesNotContain(r.Coefficients, double.IsNaN));
     }
 
+    [Theory]
+    [InlineData(25)]
+    [InlineData(30)]
+    public void Calculate_Pressure_AtOrAboveFourthOrderThreshold_ReturnsThreeFourthOrderCandidates(int count)
+    {
+        var calculator = new RegressionCalculator();
+
+        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList();
+
+        Assert.Equal(3, results.Count(r => r.Coefficients.Count == 25));
+        Assert.All(results, r => Assert.DoesNotContain(r.Coefficients, double.IsNaN));
+    }
+
     [Fact]
     public void Calculate_Pressure_DoesNotThrow_AcrossBoundaryAndNonBoundaryPointCounts()
     {
