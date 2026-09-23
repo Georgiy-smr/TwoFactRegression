@@ -4,10 +4,6 @@ using TwoFactRegressCalc.Models;
 
 namespace TwoFactRegressCalc.View.Converters;
 
-/// <summary>
-/// Converts a TwoFactorRegressionResult into a tooltip describing its method and degree
-/// tradeoffs, for the regression result picker.
-/// </summary>
 public class RegressionMethodDescriptionConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

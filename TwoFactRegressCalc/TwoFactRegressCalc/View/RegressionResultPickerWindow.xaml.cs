@@ -3,9 +3,6 @@ using TwoFactRegressCalc.ViewModels;
 
 namespace TwoFactRegressCalc
 {
-    /// <summary>
-    /// Interaction logic for RegressionResultPickerWindow.xaml
-    /// </summary>
     public partial class RegressionResultPickerWindow : Window
     {
         public RegressionResultPickerWindow()
