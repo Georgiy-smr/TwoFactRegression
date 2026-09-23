@@ -1,4 +1,3 @@
-using System.Windows;
 using Regression.Two_factor_regression;
 using Regression.Two_factor_regression.Implements;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression.TwoFact;
@@ -6,7 +5,7 @@ using TwoFactRegressCalc.Models;
 
 namespace TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 
-internal class AnalyzeFewRegression : IRegressionService
+internal class RegressionCalculator : IRegressionCalculator
 {
     private sealed record Variant(string Name, int MinPointCount, Func<List<DataTwoFact>, IEnumerable<double>> Compute);
 
@@ -14,7 +13,7 @@ internal class AnalyzeFewRegression : IRegressionService
     private readonly QrFactorizedAlgorithm _qrFactorized = new();
     private readonly IReadOnlyList<Variant> _variants;
 
-    public AnalyzeFewRegression()
+    public RegressionCalculator()
     {
         _variants = new List<Variant>
         {
@@ -36,10 +35,10 @@ internal class AnalyzeFewRegression : IRegressionService
         };
     }
 
-    public IEnumerable<double> Get(IEnumerable<DataTwoFact> data)
+    public IEnumerable<TwoFactorRegressionResult> Calculate(IEnumerable<DataTwoFact> data)
     {
         var dataList = data.ToList();
-        var results = new Dictionary<string, TwoFactorRegressionResult>();
+        var results = new List<TwoFactorRegressionResult>();
 
         foreach (var variant in _variants)
         {
@@ -50,22 +49,9 @@ internal class AnalyzeFewRegression : IRegressionService
             if (coefs.Any(double.IsNaN))
                 continue;
 
-            results[variant.Name] = new TwoFactorRegressionResult(coefs, dataList);
+            results.Add(new TwoFactorRegressionResult(variant.Name, coefs, dataList));
         }
 
-        if (results.Count == 0)
-        {
-            MessageBox.Show("Ошибка расчетов");
-            return Array.Empty<double>();
-        }
-
-        var best = results.MinBy(kv => kv.Value.MaxError);
-
-        MessageBox.Show(
-            $"MaxError: {best.Value.MaxError}\n{string.Join("\n", best.Value.Coefficients.Select((x, i) => $"a{i} : {x}"))}",
-            best.Key,
-            MessageBoxButton.OK);
-
-        return best.Value.Coefficients;
+        return results;
     }
 }
