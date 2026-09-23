@@ -87,7 +87,7 @@ namespace TwoFactRegressCalc.ViewModels
                 { Count: > 15 } dataPressure)
                 return;
 
-            var pressureCandidates = _regressionCalculator.Calculate(dataPressure).ToArray();
+            var pressureCandidates = _regressionCalculator.Calculate(dataPressure, PhysicalValue.Pressure).ToArray();
             if (pressureCandidates.Length == 0)
             {
                 MessageBox.Show("Error. Нету коэффицентов");
@@ -108,7 +108,7 @@ namespace TwoFactRegressCalc.ViewModels
                 not { Count: > 8 } dataTemp)
                 return;
 
-            var temperatureCandidates = _regressionCalculator.Calculate(dataTemp).ToArray();
+            var temperatureCandidates = _regressionCalculator.Calculate(dataTemp, PhysicalValue.Temperature).ToArray();
             if (temperatureCandidates.Length == 0)
             {
                 MessageBox.Show("Error. Нету коэффицентов");
