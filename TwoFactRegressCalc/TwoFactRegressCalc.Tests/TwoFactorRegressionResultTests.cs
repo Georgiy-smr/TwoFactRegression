@@ -6,7 +6,7 @@ namespace TwoFactRegressCalc.Tests;
 public class TwoFactorRegressionResultTests
 {
     [Fact]
-    public void Constructor_ExposesNameUnchanged()
+    public void Constructor_ExposesNameAndDegreeUnchanged()
     {
         var data = new List<DataTwoFact>
         {
@@ -16,8 +16,9 @@ public class TwoFactorRegressionResultTests
         };
         var coefficients = Enumerable.Range(0, 9).Select(i => (double)i).ToList();
 
-        var result = new TwoFactorRegressionResult("QR (normal equations)", coefficients, data);
+        var result = new TwoFactorRegressionResult("QR (normal equations)", 2, coefficients, data);
 
         Assert.Equal("QR (normal equations)", result.Name);
+        Assert.Equal(2, result.Degree);
     }
 }

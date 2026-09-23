@@ -7,7 +7,7 @@
         xmlns:converters="clr-namespace:TwoFactRegressCalc.View.Converters"
         d:DataContext="{d:DesignInstance Type={x:Type vm:RegressionResultPickerViewModel} }"
         Title="{Binding Message}"
-        Height="320" Width="460"
+        Height="320" Width="520"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     <Window.Resources>
@@ -26,19 +26,22 @@
                     FontWeight="SemiBold"
                     TextWrapping="Wrap"/>
 
-        <ListBox Grid.Row="1"
+        <ListView Grid.Row="1"
                     ItemsSource="{Binding Candidates}"
                     SelectedItem="{Binding SelectedResult, Mode=TwoWay}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Orientation="Horizontal"
-                                ToolTip="{Binding Name, Converter={StaticResource MethodDescriptionConverter}}">
-                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" Margin="0 0 8 0"/>
-                        <TextBlock Text="{Binding MaxError, StringFormat='MaxError: {0:0.0000}'}"/>
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="ToolTip" Value="{Binding Converter={StaticResource MethodDescriptionConverter}}"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Method" Width="220" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Header="Degree" Width="70" DisplayMemberBinding="{Binding Degree}"/>
+                    <GridViewColumn Header="MaxError" Width="100" DisplayMemberBinding="{Binding MaxError, StringFormat={}{0:0.0000}}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
 
         <Button Grid.Row="2"
                 Content="OK"
