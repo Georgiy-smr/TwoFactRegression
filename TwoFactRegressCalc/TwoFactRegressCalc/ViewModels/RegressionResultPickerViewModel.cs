@@ -11,9 +11,9 @@ public class RegressionResultPickerViewModel : ViewModel
 {
     public RegressionResultPickerViewModel(IEnumerable<TwoFactorRegressionResult> candidates, PhysicalValue physicalValue)
     {
-        Candidates = new ObservableCollection<TwoFactorRegressionResult>(candidates);
+        Candidates = new ObservableCollection<TwoFactorRegressionResult>(candidates.OrderBy(c => c.MaxError));
         Message = $"Select a regression model for {physicalValue}";
-        _selectedResult = Candidates.MinBy(c => c.MaxError);
+        _selectedResult = Candidates.FirstOrDefault();
     }
 
     public string Message { get; }
