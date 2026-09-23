@@ -38,10 +38,7 @@ namespace TwoFactRegressCalc.Infrastructure.DI
 
 
         internal static IServiceCollection Regression(this ServiceCollection service) =>
-            service
-                .AddTransient<IRegression<DataTwoFact>, QrFactorizedAlgorithm>()
-                .AddTransient<IRegression<DataTwoFact>, GausAlgorithm>()
-                .AddTransient<IRegressionService, AnalyzeFewRegression>();
+            service.AddTransient<IRegressionService, AnalyzeFewRegression>();
         
 
         internal static IServiceCollection FilledExcelDoc(this ServiceCollection service) =>
