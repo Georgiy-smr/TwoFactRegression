@@ -7,7 +7,7 @@
         xmlns:converters="clr-namespace:TwoFactRegressCalc.View.Converters"
         d:DataContext="{d:DesignInstance Type={x:Type vm:RegressionResultPickerViewModel} }"
         Title="{Binding Message}"
-        Height="320" Width="520"
+        Height="320" Width="720"
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize">
     <Window.Resources>
@@ -36,7 +36,7 @@
             </ListView.ItemContainerStyle>
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Method" Width="220" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Header="Method" Width="420" DisplayMemberBinding="{Binding Name}"/>
                     <GridViewColumn Header="Degree" Width="70" DisplayMemberBinding="{Binding Degree}"/>
                     <GridViewColumn Header="MaxError" Width="100" DisplayMemberBinding="{Binding MaxError, StringFormat={}{0:0.0000}}"/>
                 </GridView>
