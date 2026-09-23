@@ -19,19 +19,19 @@ internal class RegressionCalculator : IRegressionCalculator
         _variants = new List<Variant>
         {
             // Coefficient count = (order+1)^2, so that many points are needed at minimum to fit it.
-            new("QR (design matrix)", 4, 25,
+            new("QR (матрица плана)", 4, 25,
                 data => new PolynomialLeastSquaresSolver(new FourthOrderBasisExponents()).GetValues(data)),
             new(_gauss.Name, 3, 16,
                 data => _gauss.CalcCoefs(data.CreateThirdOrderPolynomialExpression())),
             new(_qrFactorized.Name, 3, 16,
                 data => _qrFactorized.CalcCoefs(data.CreateThirdOrderPolynomialExpression())),
-            new("QR (design matrix)", 3, 16,
+            new("QR (матрица плана)", 3, 16,
                 data => new PolynomialLeastSquaresSolver(new ThirdOrderBasisExponents()).GetValues(data)),
             new(_gauss.Name, 2, 9,
                 data => _gauss.CalcCoefs(data.CreateTwoOrderPolynomialExpression())),
             new(_qrFactorized.Name, 2, 9,
                 data => _qrFactorized.CalcCoefs(data.CreateTwoOrderPolynomialExpression())),
-            new("QR (design matrix)", 2, 9,
+            new("QR (матрица плана)", 2, 9,
                 data => new PolynomialLeastSquaresSolver(new SecondOrderBasisExponents()).GetValues(data)),
         };
     }

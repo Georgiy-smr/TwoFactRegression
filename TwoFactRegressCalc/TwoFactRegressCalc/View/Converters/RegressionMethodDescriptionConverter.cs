@@ -17,24 +17,24 @@ public class RegressionMethodDescriptionConverter : IValueConverter
 
         var method = candidate.Name switch
         {
-            "Gauss" =>
-                "Gauss: solves the normal equations by Gaussian elimination. Simple and fast, but forming " +
-                "the normal equations squares the matrix's condition number, so it gets numerically shakier as the order grows.",
-            "QR (normal equations)" =>
-                "QR (normal equations): solves the same normal equations as Gauss, but via QR decomposition, " +
-                "which is more numerically stable than plain elimination — it still inherits the squared condition number from forming them, though.",
-            "QR (design matrix)" =>
-                "QR (design matrix): applies QR decomposition directly to the design matrix, without ever forming " +
-                "the normal equations. Usually the most numerically stable of the three, especially at higher orders.",
-            _ => "Regression method.",
+            "Гаусс" =>
+                "Гаусс: решает нормальные уравнения методом гауссова исключения. Прост и быстр, но при составлении " +
+                "нормальных уравнений число обусловленности матрицы возводится в квадрат, поэтому с ростом степени метод становится менее устойчивым.",
+            "QR (нормальные уравнения)" =>
+                "QR (нормальные уравнения): решает те же нормальные уравнения, что и метод Гаусса, но через QR-разложение, " +
+                "которое устойчивее прямого исключения — однако унаследует то же возведение числа обусловленности в квадрат при их составлении.",
+            "QR (матрица плана)" =>
+                "QR (матрица плана): применяет QR-разложение напрямую к матрице плана, не составляя нормальные уравнения. " +
+                "Обычно самый устойчивый из трёх методов, особенно при высоких степенях.",
+            _ => "Метод регрессии.",
         };
 
         var degree = candidate.Degree switch
         {
-            2 => " 2nd order, 9 terms: most robust with few points, but may underfit a strongly curved relationship.",
-            3 => " 3rd order, 16 terms: more flexible than 2nd order, needs more points to stay well-conditioned.",
-            4 => " 4th order, 25 terms: most flexible, but also most prone to overfitting — a high order of magnitude " +
-                 "among the coefficients, or a MaxError that looks unexpectedly large, is a sign this fit won't generalize well.",
+            2 => " 2-я степень, 9 коэффициентов: наиболее устойчив при малом числе точек, но может не уловить сильно нелинейную зависимость (недообучение).",
+            3 => " 3-я степень, 16 коэффициентов: более гибкая модель, чем 2-я степень, требует больше точек для устойчивости.",
+            4 => " 4-я степень, 25 коэффициентов: самая гибкая модель, но и наиболее склонная к переобучению — большой порядок величины " +
+                 "коэффициентов или неожиданно большая MaxError говорят о том, что модель плохо обобщается.",
             _ => string.Empty,
         };
 
