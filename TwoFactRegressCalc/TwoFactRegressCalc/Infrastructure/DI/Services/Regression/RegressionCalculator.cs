@@ -21,6 +21,10 @@ internal class RegressionCalculator : IRegressionCalculator
             // Coefficient count = (order+1)^2, so that many points are needed at minimum to fit it.
             new("QR-разложение матрицы плана (без нормальных уравнений)", 4, 25,
                 data => new PolynomialLeastSquaresSolver(new FourthOrderBasisExponents()).GetValues(data)),
+            new(_gauss.Name, 4, 25,
+                data => _gauss.CalcCoefs(data.CreateFourthOrderPolynomialExpression())),
+            new(_qrFactorized.Name, 4, 25,
+                data => _qrFactorized.CalcCoefs(data.CreateFourthOrderPolynomialExpression())),
             new(_gauss.Name, 3, 16,
                 data => _gauss.CalcCoefs(data.CreateThirdOrderPolynomialExpression())),
             new(_qrFactorized.Name, 3, 16,
