@@ -1,6 +1,7 @@
 ﻿using Regression.Two_factor_regression;
 using Regression.Two_factor_regression.Implements;
 using Regression.Two_factor_regression.Interfaces;
+using TwoFactRegressCalc.Models;
 
 namespace TwoFactRegressCalc.Infrastructure.DI.Services.Regression.TwoFact;
 
@@ -12,7 +13,7 @@ internal class QrFactorizedAlgorithm : IRegression<DataTwoFact>
     }
     private readonly global::Regression.Two_factor_regression.Interfaces.Services.IRegressionAnalysisService _serviceRegression;
 
-    public string Name => "QR (нормальные уравнения)";
+    public string Name => RegressionMethodNames.QrNormalEquations;
 
     public IEnumerable<double> CalcCoefs(IPolynomialExpression regressionData)
     {

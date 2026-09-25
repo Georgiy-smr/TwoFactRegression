@@ -19,8 +19,10 @@ internal class RegressionCalculator : IRegressionCalculator
         _variants = new List<Variant>
         {
             // Coefficient count = (order+1)^2, so that many points are needed at minimum to fit it.
-            new("QR-разложение матрицы плана (без нормальных уравнений)", 4, 25,
+            new(RegressionMethodNames.QrDesignMatrix, 4, 25,
                 data => new PolynomialLeastSquaresSolver(new FourthOrderBasisExponents()).GetValues(data)),
+            new(RegressionMethodNames.Minimax, 4, 25,
+                data => new MinimaxPolynomialSolver(new FourthOrderBasisExponents()).GetValues(data)),
             new(_gauss.Name, 4, 25,
                 data => _gauss.CalcCoefs(data.CreateFourthOrderPolynomialExpression())),
             new(_qrFactorized.Name, 4, 25,
@@ -29,14 +31,18 @@ internal class RegressionCalculator : IRegressionCalculator
                 data => _gauss.CalcCoefs(data.CreateThirdOrderPolynomialExpression())),
             new(_qrFactorized.Name, 3, 16,
                 data => _qrFactorized.CalcCoefs(data.CreateThirdOrderPolynomialExpression())),
-            new("QR-разложение матрицы плана (без нормальных уравнений)", 3, 16,
+            new(RegressionMethodNames.QrDesignMatrix, 3, 16,
                 data => new PolynomialLeastSquaresSolver(new ThirdOrderBasisExponents()).GetValues(data)),
+            new(RegressionMethodNames.Minimax, 3, 16,
+                data => new MinimaxPolynomialSolver(new ThirdOrderBasisExponents()).GetValues(data)),
             new(_gauss.Name, 2, 9,
                 data => _gauss.CalcCoefs(data.CreateTwoOrderPolynomialExpression())),
             new(_qrFactorized.Name, 2, 9,
                 data => _qrFactorized.CalcCoefs(data.CreateTwoOrderPolynomialExpression())),
-            new("QR-разложение матрицы плана (без нормальных уравнений)", 2, 9,
+            new(RegressionMethodNames.QrDesignMatrix, 2, 9,
                 data => new PolynomialLeastSquaresSolver(new SecondOrderBasisExponents()).GetValues(data)),
+            new(RegressionMethodNames.Minimax, 2, 9,
+                data => new MinimaxPolynomialSolver(new SecondOrderBasisExponents()).GetValues(data)),
         };
     }
 
