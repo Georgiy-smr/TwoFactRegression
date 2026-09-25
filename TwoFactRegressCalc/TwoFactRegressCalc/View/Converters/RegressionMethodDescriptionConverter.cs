@@ -6,6 +6,8 @@ namespace TwoFactRegressCalc.View.Converters;
 
 public class RegressionMethodDescriptionConverter : IValueConverter
 {
+    public const string DefaultDescription = "Метод регрессии.";
+
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is not TwoFactorRegressionResult candidate)
@@ -13,16 +15,22 @@ public class RegressionMethodDescriptionConverter : IValueConverter
 
         var method = candidate.Name switch
         {
-            "Гаусс" =>
+            RegressionMethodNames.Gauss =>
                 "Гаусс: решает нормальные уравнения методом гауссова исключения. Прост и быстр, но при составлении " +
                 "нормальных уравнений число обусловленности матрицы возводится в квадрат, поэтому с ростом степени метод становится менее устойчивым.",
-            "QR (нормальные уравнения)" =>
+            RegressionMethodNames.QrNormalEquations =>
                 "QR (нормальные уравнения): решает те же нормальные уравнения, что и метод Гаусса, но через QR-разложение, " +
                 "которое устойчивее прямого исключения — однако унаследует то же возведение числа обусловленности в квадрат при их составлении.",
-            "QR-разложение матрицы плана (без нормальных уравнений)" =>
+            RegressionMethodNames.QrDesignMatrix =>
                 "QR-разложение матрицы плана: применяет QR-разложение напрямую к матрице плана, не составляя нормальные уравнения. " +
-                "Обычно самый устойчивый из трёх методов, особенно при высоких степенях.",
-            _ => "Метод регрессии.",
+                "Самый устойчивый из методов наименьших квадратов, особенно при высоких степенях. " +
+                "Рекомендуется по умолчанию: лучше всех обобщает между температурами калибровки.",
+            RegressionMethodNames.Minimax =>
+                "Минимакс (алгоритм Лоусона). ➕ Наименьшая максимальная ошибка на точках калибровки " +
+                "(на эталонных данных 223/224 примерно на 35% ниже, чем у МНК). " +
+                "➖ Между температурами калибровки ошибается сильнее МНК; чувствителен к отдельным шумным точкам. " +
+                "Рекомендуется, когда приёмка идёт строго по точкам калибровки.",
+            _ => DefaultDescription,
         };
 
         var degree = candidate.Degree switch
