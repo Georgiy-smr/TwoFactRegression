@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Regression.Two_factor_regression;
 using TwoFactRegressCalc.Infrastructure.Commands.Base;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Creator;
+using TwoFactRegressCalc.Infrastructure.DI.Services.DatasetReview;
 using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
@@ -20,6 +21,8 @@ namespace TwoFactRegressCalc.ViewModels
     internal class MainViewModel : ViewModel
     {
         private readonly IReadData<DataTwoFact> _dataExcelReader;
+        private readonly IReadCalibrationPoints _calibrationPointReader;
+        private readonly IDatasetErrorReview _datasetReview;
         private readonly IDialogService _filedialog;
         private readonly IRegressionCalculator _regressionCalculator;
         private readonly IRegressionResultPicker _resultPicker;
@@ -30,6 +33,8 @@ namespace TwoFactRegressCalc.ViewModels
 
         public MainViewModel(
             IReadData<DataTwoFact> dataExcelReader,
+            IReadCalibrationPoints calibrationPointReader,
+            IDatasetErrorReview datasetReview,
             IDialogService dialog,
             IRegressionCalculator regressionCalculator,
             IRegressionResultPicker resultPicker,
@@ -39,6 +44,8 @@ namespace TwoFactRegressCalc.ViewModels
             ILogger<MainViewModel> logger)
         {
             _dataExcelReader = dataExcelReader;
+            _calibrationPointReader = calibrationPointReader;
+            _datasetReview = datasetReview;
             _filedialog = dialog;
             _regressionCalculator = regressionCalculator;
             _resultPicker = resultPicker;
@@ -82,6 +89,16 @@ namespace TwoFactRegressCalc.ViewModels
 
             if (ShowUserDialogIfFilePathIsExists(combine))
                 return;
+
+            var calibrationDataset = await _calibrationPointReader.ReadCalibrationPointsAsync(_filedialog.FilePath).ToListAsync();
+            try
+            {
+                _datasetReview.Review(calibrationDataset, AccuracyClassPercent);
+            }
+            catch (DatasetReviewCancelledException)
+            {
+                return;
+            }
 
             if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Pressure).ToListAsync() is not
                 { Count: > 15 } dataPressure)
@@ -201,6 +218,40 @@ namespace TwoFactRegressCalc.ViewModels
             }
         }
 
+        private double _accuracyClassPercent = 0.01;
+
+        /// <summary>
+        /// Класс точности датчика, % - порог проверки точек калибровки
+        /// </summary>
+        public double AccuracyClassPercent
+        {
+            get => _accuracyClassPercent;
+            set
+            {
+                if (!double.IsFinite(value) || value <= 0)
+                {
+                    // Revert the TextBox to the last valid value.
+                    OnPropertyChanged();
+                    return;
+                }
+                if (!Set(ref _accuracyClassPercent, value) || _config is null) return;
+                _config.AccuracyClassPercent = value;
+                SaveConfig();
+            }
+        }
+
+        private async void SaveConfig()
+        {
+            try
+            {
+                await _configService.WriteAsync(_config);
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to save settings");
+            }
+        }
+
         private string? _serialText;
 
         public string? SerialText
@@ -258,6 +309,8 @@ namespace TwoFactRegressCalc.ViewModels
         {
             _config = await _configService.ReadAsync();
             FilePath = _config.FilePath;
+            _accuracyClassPercent = _config.AccuracyClassPercent;
+            OnPropertyChanged(nameof(AccuracyClassPercent));
             _logger.LogError("TEST");
         }
 
