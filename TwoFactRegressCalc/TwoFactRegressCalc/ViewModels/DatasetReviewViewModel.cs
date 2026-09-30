@@ -70,7 +70,7 @@ public class DatasetReviewViewModel : ViewModel
     private string FormatPressure(double pressure) => pressure.ToString("0.####");
 
     // The review window shows the code error scaled up so small deviations stay readable.
-    private string FormatCodeError(double codeError) => (codeError * CodeErrorDisplayScale).ToString("0.##");
+    private string FormatCodeError(double codeError) => (codeError * CodeErrorDisplayScale).ToString("0");
 
     private const double CodeErrorDisplayScale = 100000;
 }
