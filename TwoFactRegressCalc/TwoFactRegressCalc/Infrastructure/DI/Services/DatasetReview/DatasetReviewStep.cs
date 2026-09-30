@@ -1,21 +1,34 @@
 using Microsoft.Extensions.Logging;
 using Regression.OutlierDetection;
+using TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
+using TwoFactRegressCalc.Models;
 using TwoFactRegressCalc.ViewModels;
 
 namespace TwoFactRegressCalc.Infrastructure.DI.Services.DatasetReview;
 
-public class DatasetErrorReviewService : IDatasetErrorReview
+// Checks the dataset for mis-loaded points before any fitting; the operator may cancel the whole calculation.
+internal class DatasetReviewStep : IRegressionCalculator
 {
-    private readonly ILogger<DatasetErrorReviewService> _logger;
+    private readonly IRegressionCalculator _next;
+    private readonly Config _config;
+    private readonly ILogger<DatasetReviewStep> _logger;
 
-    public DatasetErrorReviewService(ILogger<DatasetErrorReviewService> logger)
+    public DatasetReviewStep(IRegressionCalculator next, Config config, ILogger<DatasetReviewStep> logger)
     {
+        _next = next;
+        _config = config;
         _logger = logger;
     }
 
-    public void Review(IReadOnlyList<CalibrationPoint> dataset, double accuracyClassPercent)
+    public IReadOnlyList<TwoFactorRegressionResult> Calculate(IReadOnlyList<CalibrationPoint> dataset)
     {
-        var checkResult = new CalibrationDatasetChecker(accuracyClassPercent).Check(dataset);
+        Review(dataset);
+        return _next.Calculate(dataset);
+    }
+
+    private void Review(IReadOnlyList<CalibrationPoint> dataset)
+    {
+        var checkResult = new CalibrationDatasetChecker(_config.AccuracyClassPercent).Check(dataset);
 
         if (checkResult.IsClean)
         {

@@ -2,10 +2,9 @@
 using System.Windows;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
-using Regression.Two_factor_regression;
+using Regression.OutlierDetection;
 using TwoFactRegressCalc.Infrastructure.Commands.Base;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Creator;
-using TwoFactRegressCalc.Infrastructure.DI.Services.DatasetReview;
 using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
@@ -20,42 +19,35 @@ namespace TwoFactRegressCalc.ViewModels
 {
     internal class MainViewModel : ViewModel
     {
-        private readonly IReadData<DataTwoFact> _dataExcelReader;
-        private readonly IReadCalibrationPoints _calibrationPointReader;
-        private readonly IDatasetErrorReview _datasetReview;
+        private readonly IReadData<CalibrationPoint> _dataExcelReader;
         private readonly IDialogService _filedialog;
         private readonly IRegressionCalculator _regressionCalculator;
-        private readonly IRegressionResultPicker _resultPicker;
         private readonly IWriteData<AllSensorCoefficients> _writer;
         private readonly ICreate<CoefficientsBySensor> _fileCreator;
         private readonly IJsonFileService<Config> _configService;
+        private readonly Config _config;
         private readonly ILogger<MainViewModel> _logger;
 
         public MainViewModel(
-            IReadData<DataTwoFact> dataExcelReader,
-            IReadCalibrationPoints calibrationPointReader,
-            IDatasetErrorReview datasetReview,
+            IReadData<CalibrationPoint> dataExcelReader,
             IDialogService dialog,
             IRegressionCalculator regressionCalculator,
-            IRegressionResultPicker resultPicker,
             IWriteData<AllSensorCoefficients> writer,
             ICreate<CoefficientsBySensor> fileCreator,
             IJsonFileService<Config> configService,
+            Config config,
             ILogger<MainViewModel> logger)
         {
             _dataExcelReader = dataExcelReader;
-            _calibrationPointReader = calibrationPointReader;
-            _datasetReview = datasetReview;
             _filedialog = dialog;
             _regressionCalculator = regressionCalculator;
-            _resultPicker = resultPicker;
             _writer = writer;
             _fileCreator = fileCreator;
             _configService = configService;
+            _config = config;
             _logger = logger;
         }
 
-        private Config _config;
         /// <summary>
         /// summary
         /// </summary>
@@ -90,62 +82,28 @@ namespace TwoFactRegressCalc.ViewModels
             if (ShowUserDialogIfFilePathIsExists(combine))
                 return;
 
-            var calibrationDataset = await _calibrationPointReader.ReadCalibrationPointsAsync(_filedialog.FilePath).ToListAsync();
             try
             {
-                _datasetReview.Review(calibrationDataset, AccuracyClassPercent);
+                var dataset = await _dataExcelReader.ReadAsync(_filedialog.FilePath).ToListAsync();
+                var sensorCoefficients = SensorCoefficientsResult.From(_regressionCalculator.Calculate(dataset));
+
+                await _writer.Write(sensorCoefficients.GetAllCoefficients(), _filedialog.FilePath);
+                await _fileCreator.CreateAsync(combine, sensorCoefficients.GetCoefficientsBySensor());
             }
-            catch (DatasetReviewCancelledException)
+            catch (OperationCanceledException e)
             {
-                return;
+                // The operator cancelled the dataset review or a model picker.
+                _logger.LogInformation(e.Message);
             }
-
-            if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Pressure).ToListAsync() is not
-                { Count: > 15 } dataPressure)
-                return;
-
-            var pressureCandidates = _regressionCalculator.Calculate(dataPressure, PhysicalValue.Pressure).ToArray();
-            if (pressureCandidates.Length == 0)
+            catch (NoRegressionCandidatesException e)
             {
-                MessageBox.Show("Error. Нету коэффицентов");
-                return;
+                MessageBox.Show(e.Message, "Ошибка расчёта", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-
-            TwoFactorRegressionResult selectedPressure;
-            try
+            catch (Exception e)
             {
-                selectedPressure = _resultPicker.Pick(pressureCandidates, PhysicalValue.Pressure);
+                _logger.LogError(e, "Calculation from {File} failed", _filedialog.FilePath);
+                MessageBox.Show(e.Message, "Ошибка расчёта", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            catch (RegressionSelectionCancelledException)
-            {
-                return;
-            }
-
-            if (await _dataExcelReader.ReadAsync(_filedialog.FilePath, PhysicalValue.Temperature).ToListAsync() is
-                not { Count: > 8 } dataTemp)
-                return;
-
-            var temperatureCandidates = _regressionCalculator.Calculate(dataTemp, PhysicalValue.Temperature).ToArray();
-            if (temperatureCandidates.Length == 0)
-            {
-                MessageBox.Show("Error. Нету коэффицентов");
-                return;
-            }
-
-            TwoFactorRegressionResult selectedTemperature;
-            try
-            {
-                selectedTemperature = _resultPicker.Pick(temperatureCandidates, PhysicalValue.Temperature);
-            }
-            catch (RegressionSelectionCancelledException)
-            {
-                return;
-            }
-
-            var sensorCoefficients = new SensorCoefficientsResult(selectedPressure.Coefficients, selectedTemperature.Coefficients);
-
-            await _writer.Write(sensorCoefficients.GetAllCoefficients(), _filedialog.FilePath);
-            await _fileCreator.CreateAsync(combine, sensorCoefficients.GetCoefficientsBySensor());
         }
 
         /// <summary>
@@ -218,24 +176,22 @@ namespace TwoFactRegressCalc.ViewModels
             }
         }
 
-        private double _accuracyClassPercent = 0.01;
-
         /// <summary>
         /// Класс точности датчика, % - порог проверки точек калибровки
         /// </summary>
         public double AccuracyClassPercent
         {
-            get => _accuracyClassPercent;
+            get => _config.AccuracyClassPercent;
             set
             {
-                if (!double.IsFinite(value) || value <= 0)
+                if (!double.IsFinite(value) || value <= 0 || value == _config.AccuracyClassPercent)
                 {
                     // Revert the TextBox to the last valid value.
                     OnPropertyChanged();
                     return;
                 }
-                if (!Set(ref _accuracyClassPercent, value) || _config is null) return;
                 _config.AccuracyClassPercent = value;
+                OnPropertyChanged();
                 SaveConfig();
             }
         }
@@ -307,9 +263,10 @@ namespace TwoFactRegressCalc.ViewModels
 
         private async Task On_NAME_CommandExecuted(object p)
         {
-            _config = await _configService.ReadAsync();
+            var saved = await _configService.ReadAsync();
+            _config.FilePath = saved.FilePath;
+            _config.AccuracyClassPercent = saved.AccuracyClassPercent;
             FilePath = _config.FilePath;
-            _accuracyClassPercent = _config.AccuracyClassPercent;
             OnPropertyChanged(nameof(AccuracyClassPercent));
             _logger.LogError("TEST");
         }

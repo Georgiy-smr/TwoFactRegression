@@ -29,7 +29,6 @@ namespace TwoFactRegressCalc
         private IServiceCollection InitializeServices(ServiceCollection services)
         {
             services.ExcelReader();
-            services.DatasetReview();
             services.FileDialog();
             services.MainWindowAndViewModel();
             services.Regression();

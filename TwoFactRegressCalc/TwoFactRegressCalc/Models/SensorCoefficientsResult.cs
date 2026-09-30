@@ -1,3 +1,5 @@
+using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
+
 namespace TwoFactRegressCalc.Models;
 
 public sealed class SensorCoefficientsResult
@@ -11,6 +13,14 @@ public sealed class SensorCoefficientsResult
     {
         _pressureCoefficients = pressureCoefficients;
         _temperatureCoefficients = temperatureCoefficients;
+    }
+
+    public static SensorCoefficientsResult From(IEnumerable<TwoFactorRegressionResult> results)
+    {
+        var list = results.ToList();
+        return new SensorCoefficientsResult(
+            list.Single(r => r.PhysicalValue == PhysicalValue.Pressure).Coefficients,
+            list.Single(r => r.PhysicalValue == PhysicalValue.Temperature).Coefficients);
     }
 
     public CoefficientsBySensor GetCoefficientsBySensor()

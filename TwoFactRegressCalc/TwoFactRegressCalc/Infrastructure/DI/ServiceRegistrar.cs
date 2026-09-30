@@ -5,7 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Regression.Two_factor_regression;
+using Microsoft.Extensions.Logging;
+using Regression.OutlierDetection;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Creator;
 using TwoFactRegressCalc.Infrastructure.DI.Services.DatasetReview;
 using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
@@ -32,21 +33,27 @@ namespace TwoFactRegressCalc.Infrastructure.DI
 
         internal static IServiceCollection ExcelReader(this ServiceCollection services)
             => services
-                .AddSingleton<ExcelFileDataReader>()
-                .AddSingleton<IReadData<DataTwoFact>>(provider => provider.GetRequiredService<ExcelFileDataReader>())
-                .AddSingleton<IReadCalibrationPoints>(provider => provider.GetRequiredService<ExcelFileDataReader>());
-
-        internal static IServiceCollection DatasetReview(this ServiceCollection service) =>
-            service.AddTransient<IDatasetErrorReview, DatasetErrorReviewService>();
+                .AddSingleton<IReadData<CalibrationPoint>, ExcelFileDataReader>();
 
         internal static IServiceCollection FileDialog(this ServiceCollection service) =>
             service.AddTransient<IDialogService, FileDialogService>();
 
 
+        // Dataset review -> pressure fit and pick -> temperature fit and pick.
         internal static IServiceCollection Regression(this ServiceCollection service) =>
             service
-                .AddTransient<IRegressionCalculator, RegressionCalculator>()
-                .AddTransient<IRegressionResultPicker, RegressionResultPickerService>();
+                .AddSingleton<RegressionCandidateCalculator>()
+                .AddTransient<IRegressionResultPicker, RegressionResultPickerService>()
+                .AddTransient<IRegressionCalculator>(provider =>
+                {
+                    var candidates = provider.GetRequiredService<RegressionCandidateCalculator>();
+                    var picker = provider.GetRequiredService<IRegressionResultPicker>();
+                    return new DatasetReviewStep(
+                        new RegressionPickStep(PhysicalValue.Pressure, candidates, picker,
+                            new RegressionPickStep(PhysicalValue.Temperature, candidates, picker)),
+                        provider.GetRequiredService<Config>(),
+                        provider.GetRequiredService<ILogger<DatasetReviewStep>>());
+                });
 
 
         internal static IServiceCollection FilledExcelDoc(this ServiceCollection service) =>
@@ -55,7 +62,10 @@ namespace TwoFactRegressCalc.Infrastructure.DI
         internal static IServiceCollection FileCreator(this ServiceCollection service) =>
             service.AddTransient<ICreate<CoefficientsBySensor>, CreateFileWithCoefficients>();
         internal static IServiceCollection JsonFileService(this ServiceCollection service) =>
-            service.AddTransient<IJsonFileService<Config>, SettingsJsonFileService>();
+            service
+                .AddTransient<IJsonFileService<Config>, SettingsJsonFileService>()
+                // One shared instance: MainViewModel loads and edits it, the dataset review reads it.
+                .AddSingleton<Config>();
 
     }
      

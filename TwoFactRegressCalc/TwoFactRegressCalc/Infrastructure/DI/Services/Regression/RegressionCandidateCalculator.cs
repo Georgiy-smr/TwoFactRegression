@@ -6,7 +6,8 @@ using TwoFactRegressCalc.Models;
 
 namespace TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 
-internal class RegressionCalculator : IRegressionCalculator
+// Fits every applicable method/degree variant; the operator picks one of the results.
+internal class RegressionCandidateCalculator
 {
     private sealed record Variant(string Name, int Order, int MinPointCount, Func<List<DataTwoFact>, IEnumerable<double>> Compute);
 
@@ -14,7 +15,7 @@ internal class RegressionCalculator : IRegressionCalculator
     private readonly QrFactorizedAlgorithm _qrFactorized = new();
     private readonly IReadOnlyList<Variant> _variants;
 
-    public RegressionCalculator()
+    public RegressionCandidateCalculator()
     {
         _variants = new List<Variant>
         {
@@ -65,7 +66,7 @@ internal class RegressionCalculator : IRegressionCalculator
             if (coefs.Any(double.IsNaN))
                 continue;
 
-            results.Add(new TwoFactorRegressionResult(variant.Name, variant.Order, coefs, dataList));
+            results.Add(new TwoFactorRegressionResult(variant.Name, variant.Order, physicalValue, coefs, dataList));
         }
 
         return results;

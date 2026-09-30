@@ -7,7 +7,7 @@ using TwoFactRegressCalc.View.Converters;
 
 namespace TwoFactRegressCalc.Tests;
 
-public class RegressionCalculatorTests
+public class RegressionCandidateCalculatorTests
 {
     private static List<DataTwoFact> GenerateData(int count)
     {
@@ -29,7 +29,7 @@ public class RegressionCalculatorTests
     [InlineData(8)]
     public void Calculate_Pressure_BelowMinimumPointCount_ReturnsNoCandidates(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
         var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure);
 
@@ -42,7 +42,7 @@ public class RegressionCalculatorTests
     [InlineData(15)]
     public void Calculate_Pressure_BelowThirdOrderThreshold_OnlyReturnsSecondOrderCandidates(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
         var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList();
 
@@ -57,7 +57,7 @@ public class RegressionCalculatorTests
     [InlineData(24)]
     public void Calculate_Pressure_BelowFourthOrderThreshold_ReturnsSecondAndThirdOrderCandidatesOnly(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
         var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList();
 
@@ -72,7 +72,7 @@ public class RegressionCalculatorTests
     [InlineData(30)]
     public void Calculate_Pressure_AtOrAboveFourthOrderThreshold_CanReturnAllThreeOrders(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
         var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList();
 
@@ -87,7 +87,7 @@ public class RegressionCalculatorTests
     [InlineData(30)]
     public void Calculate_Pressure_AtOrAboveFourthOrderThreshold_ReturnsFourFourthOrderCandidates(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
         var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList();
 
@@ -98,7 +98,7 @@ public class RegressionCalculatorTests
     [Fact]
     public void Calculate_Pressure_DoesNotThrow_AcrossBoundaryAndNonBoundaryPointCounts()
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
         for (var count = 0; count <= 30; count++)
         {
@@ -113,7 +113,7 @@ public class RegressionCalculatorTests
     [InlineData(8)]
     public void Calculate_Temperature_BelowMinimumPointCount_ReturnsNoCandidates(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
         var results = calculator.Calculate(GenerateData(count), PhysicalValue.Temperature);
 
@@ -127,7 +127,7 @@ public class RegressionCalculatorTests
     [InlineData(30)]
     public void Calculate_Temperature_AtOrAboveMinimumPointCount_OnlyReturnsSecondOrderCandidates(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
         var results = calculator.Calculate(GenerateData(count), PhysicalValue.Temperature).ToList();
 
@@ -140,7 +140,7 @@ public class RegressionCalculatorTests
     [Fact]
     public void Calculate_Temperature_DoesNotThrow_AcrossBoundaryAndNonBoundaryPointCounts()
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
         for (var count = 0; count <= 30; count++)
         {
@@ -155,7 +155,7 @@ public class RegressionCalculatorTests
     [InlineData(4, 25)]
     public void Calculate_Pressure_ReturnsMinimaxCandidateForEachOrder(int order, int coefficientCount)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
         var results = calculator.Calculate(GenerateData(30), PhysicalValue.Pressure).ToList();
 
@@ -172,7 +172,7 @@ public class RegressionCalculatorTests
     {
         // GenerateData is an exact cubic, so at orders 3 and 4 both errors are ~0 and only rounding separates them.
         const double epsilon = 1e-9;
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
         var results = calculator.Calculate(GenerateData(30), PhysicalValue.Pressure).ToList();
 
@@ -185,7 +185,7 @@ public class RegressionCalculatorTests
     [Fact]
     public void DescriptionConverter_HasSpecificDescriptionForEveryProducedMethodName()
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
         var converter = new RegressionMethodDescriptionConverter();
 
         var candidates = calculator.Calculate(GenerateData(30), PhysicalValue.Pressure)
