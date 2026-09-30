@@ -30,7 +30,7 @@ namespace TwoFactRegressCalc.Infrastructure.DI.Services.Readers
         }
 
         // Columns A-D: pressure code, temperature code, pressure, temperature.
-        private static bool TryReadRow(ExcelWorksheet worksheet, int row, out double[] values)
+        private bool TryReadRow(ExcelWorksheet worksheet, int row, out double[] values)
         {
             values = new double[4];
             for (int column = 0; column < values.Length; column++)

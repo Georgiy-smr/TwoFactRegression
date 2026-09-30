@@ -22,7 +22,7 @@ public class RegressionPickStepTests
     }
 
     // Pressure is an exact quadratic of the codes; temperature alternates wildly, so no model fits it closely.
-    private static List<CalibrationPoint> GenerateDataset(int count)
+    private List<CalibrationPoint> GenerateDataset(int count)
     {
         var dataset = new List<CalibrationPoint>(count);
         for (var i = 0; i < count; i++)
@@ -36,11 +36,11 @@ public class RegressionPickStepTests
         return dataset;
     }
 
-    private static IRegressionCalculator Chain(FakePicker picker)
+    private IRegressionCalculator Chain(FakePicker picker)
     {
         var candidates = new RegressionCandidateCalculator();
-        return new RegressionPickStep(PhysicalValue.Pressure, candidates, picker,
-            new RegressionPickStep(PhysicalValue.Temperature, candidates, picker, new RegressionChainEnd()));
+        return new PressurePickStep(candidates, picker,
+            new TemperaturePickStep(candidates, picker, new RegressionChainEnd()));
     }
 
     [Fact]

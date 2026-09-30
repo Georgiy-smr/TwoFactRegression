@@ -33,14 +33,14 @@ public class DatasetReviewViewModel : ViewModel
 
     private void OnContinueExecuted(object p) => RequestClose(this, EventArgs.Empty);
 
-    private static IReadOnlyList<DatasetReviewRow> BuildRows(DatasetCheckResult checkResult)
+    private IReadOnlyList<DatasetReviewRow> BuildRows(DatasetCheckResult checkResult)
         => checkResult.Series
             .SelectMany(BuildSeriesRows)
             .OrderBy(r => r.NominalTemperature)
             .ThenBy(r => r.FirstExcelRow)
             .ToList();
 
-    private static IEnumerable<DatasetReviewRow> BuildSeriesRows(SeriesCheck series) => series switch
+    private IEnumerable<DatasetReviewRow> BuildSeriesRows(SeriesCheck series) => series switch
     {
         CheckedSeries checkedSeries => checkedSeries.SuspiciousPoints.Select(BuildPointRow),
         UnresolvableSeries => [BuildSeriesRow(series, UnresolvableSeriesText)],
@@ -48,7 +48,7 @@ public class DatasetReviewViewModel : ViewModel
         _ => [],
     };
 
-    private static DatasetReviewRow BuildPointRow(DatasetSuspiciousPoint point)
+    private DatasetReviewRow BuildPointRow(DatasetSuspiciousPoint point)
     {
         var excelRow = point.Row + ExcelRowOffset;
         var (result, codeError) = point.Detail switch
@@ -61,13 +61,13 @@ public class DatasetReviewViewModel : ViewModel
     }
 
     // The checker builds each series from dataset points, so Rows is never empty.
-    private static DatasetReviewRow BuildSeriesRow(SeriesCheck series, string result)
+    private DatasetReviewRow BuildSeriesRow(SeriesCheck series, string result)
         => new(series.NominalTemperature,
             series.Rows.Min() + ExcelRowOffset,
             series.Rows.Max() + ExcelRowOffset,
             string.Empty, result, string.Empty);
 
-    private static string FormatPressure(double pressure) => pressure.ToString("0.####");
+    private string FormatPressure(double pressure) => pressure.ToString("0.####");
 
-    private static string FormatCodeError(double codeError) => codeError.ToString("0.##");
+    private string FormatCodeError(double codeError) => codeError.ToString("0.##");
 }

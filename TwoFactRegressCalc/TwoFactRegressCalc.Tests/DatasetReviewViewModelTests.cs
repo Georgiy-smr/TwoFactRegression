@@ -6,13 +6,13 @@ namespace TwoFactRegressCalc.Tests;
 
 public class DatasetReviewViewModelTests
 {
-    private static DatasetSuspiciousPoint OutlierAt(int row, double temperature, double pressure, double codeError)
+    private DatasetSuspiciousPoint OutlierAt(int row, double temperature, double pressure, double codeError)
         => new(row, temperature, new Outlier(0, new DataTwoFact { Y = pressure }, codeError));
 
-    private static DatasetSuspiciousPoint AmbiguousAt(int row, double temperature, double pressure)
+    private DatasetSuspiciousPoint AmbiguousAt(int row, double temperature, double pressure)
         => new(row, temperature, new AmbiguousPoint(0, new DataTwoFact { Y = pressure }));
 
-    private static CheckedSeries Checked(double temperature, int[] rows, params DatasetSuspiciousPoint[] points)
+    private CheckedSeries Checked(double temperature, int[] rows, params DatasetSuspiciousPoint[] points)
         => new(temperature, rows, points);
 
     [Fact]

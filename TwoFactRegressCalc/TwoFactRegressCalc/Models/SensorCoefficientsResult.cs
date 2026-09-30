@@ -15,12 +15,11 @@ public sealed class SensorCoefficientsResult
         _temperatureCoefficients = temperatureCoefficients;
     }
 
-    public static SensorCoefficientsResult From(IEnumerable<TwoFactorRegressionResult> results)
+    public SensorCoefficientsResult(IReadOnlyList<TwoFactorRegressionResult> results)
+        : this(
+            results.Single(r => r.PhysicalValue == PhysicalValue.Pressure).Coefficients,
+            results.Single(r => r.PhysicalValue == PhysicalValue.Temperature).Coefficients)
     {
-        var list = results.ToList();
-        return new SensorCoefficientsResult(
-            list.Single(r => r.PhysicalValue == PhysicalValue.Pressure).Coefficients,
-            list.Single(r => r.PhysicalValue == PhysicalValue.Temperature).Coefficients);
     }
 
     public CoefficientsBySensor GetCoefficientsBySensor()
@@ -36,5 +35,5 @@ public sealed class SensorCoefficientsResult
     public AllSensorCoefficients GetAllCoefficients()
         => new(_pressureCoefficients, _temperatureCoefficients);
 
-    private static double At(IReadOnlyList<double> src, int i) => i < src.Count ? src[i] : 0d;
+    private double At(IReadOnlyList<double> src, int i) => i < src.Count ? src[i] : 0d;
 }

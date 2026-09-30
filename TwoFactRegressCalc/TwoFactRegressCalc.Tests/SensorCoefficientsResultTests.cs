@@ -89,13 +89,13 @@ public class SensorCoefficientsResultTests
     }
 
     [Fact]
-    public void From_TakesCoefficientsByPhysicalValueRegardlessOfOrder()
+    public void Constructor_FromResults_TakesCoefficientsByPhysicalValueRegardlessOfOrder()
     {
         var data = new List<DataTwoFact> { new() { X1 = 1, X2 = 1, Y = 1 } };
         var pressure = Enumerable.Range(0, 16).Select(i => (double)i).ToList();
         var temperature = Enumerable.Range(100, 9).Select(i => (double)i).ToList();
 
-        var result = SensorCoefficientsResult.From(
+        var result = new SensorCoefficientsResult(
         [
             new TwoFactorRegressionResult("t", 2, PhysicalValue.Temperature, temperature, data),
             new TwoFactorRegressionResult("p", 3, PhysicalValue.Pressure, pressure, data),

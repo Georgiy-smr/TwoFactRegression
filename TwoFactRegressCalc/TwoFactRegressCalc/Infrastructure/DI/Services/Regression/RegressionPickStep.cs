@@ -6,14 +6,14 @@ using TwoFactRegressCalc.Models;
 namespace TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 
 // Fits one physical value, lets the operator pick a model, then hands the dataset to the next step.
-internal class RegressionPickStep : IRegressionCalculator
+internal abstract class RegressionPickStep : IRegressionCalculator
 {
     private readonly PhysicalValue _physicalValue;
     private readonly RegressionCandidateCalculator _candidates;
     private readonly IRegressionResultPicker _picker;
     private readonly IRegressionCalculator _next;
 
-    public RegressionPickStep(
+    protected RegressionPickStep(
         PhysicalValue physicalValue,
         RegressionCandidateCalculator candidates,
         IRegressionResultPicker picker,

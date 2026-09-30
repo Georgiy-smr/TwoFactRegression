@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Regression.OutlierDetection;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Creator;
 using TwoFactRegressCalc.Infrastructure.DI.Services.DatasetReview;
@@ -46,16 +45,9 @@ namespace TwoFactRegressCalc.Infrastructure.DI
                 .AddSingleton<RegressionCandidateCalculator>()
                 .AddTransient<IRegressionResultPicker, RegressionResultPickerService>()
                 .AddTransient<IRegressionCalculator, RegressionChainEnd>()
-                .Decorate<IRegressionCalculator>((next, provider) => PickStep(provider, PhysicalValue.Temperature, next))
-                .Decorate<IRegressionCalculator>((next, provider) => PickStep(provider, PhysicalValue.Pressure, next))
+                .Decorate<IRegressionCalculator, TemperaturePickStep>()
+                .Decorate<IRegressionCalculator, PressurePickStep>()
                 .Decorate<IRegressionCalculator, DatasetReviewStep>();
-
-        private static RegressionPickStep PickStep(
-            IServiceProvider provider, PhysicalValue physicalValue, IRegressionCalculator next) =>
-            new(physicalValue,
-                provider.GetRequiredService<RegressionCandidateCalculator>(),
-                provider.GetRequiredService<IRegressionResultPicker>(),
-                next);
 
 
         internal static IServiceCollection FilledExcelDoc(this ServiceCollection service) =>
