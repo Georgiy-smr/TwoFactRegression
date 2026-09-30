@@ -20,18 +20,18 @@ public class DatasetReviewViewModel : ViewModel
     {
         Rows = BuildRows(checkResult);
         Message = $"Найдено проблем: {Rows.Count}. Продолжить расчёт коэффициентов?";
+        ContinueCommand = new LambdaCommand(OnContinueExecuted);
     }
 
     public string Message { get; }
 
     public IReadOnlyList<DatasetReviewRow> Rows { get; }
 
-    public event EventHandler? RequestClose;
+    public event EventHandler RequestClose = delegate { };
 
-    private ICommand? _continueCommand;
-    public ICommand ContinueCommand => _continueCommand ??= new LambdaCommand(OnContinueExecuted);
+    public ICommand ContinueCommand { get; }
 
-    private void OnContinueExecuted(object p) => RequestClose?.Invoke(this, EventArgs.Empty);
+    private void OnContinueExecuted(object p) => RequestClose(this, EventArgs.Empty);
 
     public static IReadOnlyList<DatasetReviewRow> BuildRows(DatasetCheckResult checkResult)
         => checkResult.Series
@@ -53,21 +53,21 @@ public class DatasetReviewViewModel : ViewModel
         var excelRow = point.Row + ExcelRowOffset;
         var (result, codeError) = point.Detail switch
         {
-            Outlier outlier => (OutlierText, (double?)outlier.CodeError),
-            _ => (AmbiguousPointText, null),
+            Outlier outlier => (OutlierText, FormatCodeError(outlier.CodeError)),
+            _ => (AmbiguousPointText, string.Empty),
         };
         return new DatasetReviewRow(
-            point.NominalTemperature, excelRow, excelRow.ToString(), point.Detail.Point.Y, result, codeError);
+            point.NominalTemperature, excelRow, excelRow, FormatPressure(point.Detail.Point.Y), result, codeError);
     }
 
+    // The checker builds each series from dataset points, so Rows is never empty.
     private static DatasetReviewRow BuildSeriesRow(SeriesCheck series, string result)
-    {
-        if (series.Rows.Count == 0)
-            return new DatasetReviewRow(series.NominalTemperature, 0, string.Empty, null, result, null);
+        => new(series.NominalTemperature,
+            series.Rows.Min() + ExcelRowOffset,
+            series.Rows.Max() + ExcelRowOffset,
+            string.Empty, result, string.Empty);
 
-        var first = series.Rows.Min() + ExcelRowOffset;
-        var last = series.Rows.Max() + ExcelRowOffset;
-        var range = first == last ? first.ToString() : $"{first}–{last}";
-        return new DatasetReviewRow(series.NominalTemperature, first, range, null, result, null);
-    }
+    public static string FormatPressure(double pressure) => pressure.ToString("0.####");
+
+    public static string FormatCodeError(double codeError) => codeError.ToString("0.##");
 }

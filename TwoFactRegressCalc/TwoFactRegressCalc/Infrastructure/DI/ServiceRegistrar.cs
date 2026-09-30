@@ -45,12 +45,13 @@ namespace TwoFactRegressCalc.Infrastructure.DI
             service
                 .AddSingleton<RegressionCandidateCalculator>()
                 .AddTransient<IRegressionResultPicker, RegressionResultPickerService>()
-                .AddTransient<IRegressionCalculator>(provider => PickStep(provider, PhysicalValue.Temperature))
+                .AddTransient<IRegressionCalculator, RegressionChainEnd>()
+                .Decorate<IRegressionCalculator>((next, provider) => PickStep(provider, PhysicalValue.Temperature, next))
                 .Decorate<IRegressionCalculator>((next, provider) => PickStep(provider, PhysicalValue.Pressure, next))
                 .Decorate<IRegressionCalculator, DatasetReviewStep>();
 
         private static RegressionPickStep PickStep(
-            IServiceProvider provider, PhysicalValue physicalValue, IRegressionCalculator? next = null) =>
+            IServiceProvider provider, PhysicalValue physicalValue, IRegressionCalculator next) =>
             new(physicalValue,
                 provider.GetRequiredService<RegressionCandidateCalculator>(),
                 provider.GetRequiredService<IRegressionResultPicker>(),

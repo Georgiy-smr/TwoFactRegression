@@ -10,12 +10,12 @@ public class RegressionPickStepTests
     private sealed class FakePicker : IRegressionResultPicker
     {
         public List<PhysicalValue> Calls { get; } = new();
-        public PhysicalValue? CancelOn { get; init; }
+        public IReadOnlySet<PhysicalValue> CancelOn { get; init; } = new HashSet<PhysicalValue>();
 
         public TwoFactorRegressionResult Pick(IEnumerable<TwoFactorRegressionResult> candidates, PhysicalValue physicalValue)
         {
             Calls.Add(physicalValue);
-            if (physicalValue == CancelOn)
+            if (CancelOn.Contains(physicalValue))
                 throw new RegressionSelectionCancelledException(physicalValue);
             return candidates.OrderBy(c => c.MaxError).First();
         }
@@ -40,7 +40,7 @@ public class RegressionPickStepTests
     {
         var candidates = new RegressionCandidateCalculator();
         return new RegressionPickStep(PhysicalValue.Pressure, candidates, picker,
-            new RegressionPickStep(PhysicalValue.Temperature, candidates, picker));
+            new RegressionPickStep(PhysicalValue.Temperature, candidates, picker, new RegressionChainEnd()));
     }
 
     [Fact]
@@ -77,7 +77,7 @@ public class RegressionPickStepTests
     [Fact]
     public void Calculate_PressurePickCancelled_StopsBeforeTemperature()
     {
-        var picker = new FakePicker { CancelOn = PhysicalValue.Pressure };
+        var picker = new FakePicker { CancelOn = new HashSet<PhysicalValue> { PhysicalValue.Pressure } };
 
         Assert.ThrowsAny<OperationCanceledException>(() => Chain(picker).Calculate(GenerateDataset(30)));
         Assert.Equal([PhysicalValue.Pressure], picker.Calls);

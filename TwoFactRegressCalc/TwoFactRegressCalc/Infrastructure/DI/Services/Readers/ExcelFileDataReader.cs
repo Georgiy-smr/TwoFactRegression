@@ -16,23 +16,29 @@ namespace TwoFactRegressCalc.Infrastructure.DI.Services.Readers
             if (worksheet.Dimension is not { Rows: > 0 } dimension)
                 yield break;
 
-            for (int row = 2; row <= dimension.Rows; row++)
+            var points = await Task.Run(() =>
             {
-                var point = await Task.Run(() => TryReadCalibrationPoint(worksheet, row));
-                if (point is null)
-                    yield break;
+                var read = new List<CalibrationPoint>();
+                // The first row that doesn't parse ends the dataset.
+                for (int row = 2; row <= dimension.Rows && TryReadRow(worksheet, row, out var v); row++)
+                    read.Add(new CalibrationPoint(v[0], v[1], v[2], v[3]));
+                return read;
+            });
+
+            foreach (var point in points)
                 yield return point;
-            }
         }
 
-        private static CalibrationPoint? TryReadCalibrationPoint(ExcelWorksheet worksheet, int row)
+        // Columns A-D: pressure code, temperature code, pressure, temperature.
+        private static bool TryReadRow(ExcelWorksheet worksheet, int row, out double[] values)
         {
-            if (double.TryParse(worksheet.Cells[row, 1].Value?.ToString(), out var pressureCode)
-                && double.TryParse(worksheet.Cells[row, 2].Value?.ToString(), out var temperatureCode)
-                && double.TryParse(worksheet.Cells[row, 3].Value?.ToString(), out var pressure)
-                && double.TryParse(worksheet.Cells[row, 4].Value?.ToString(), out var temperature))
-                return new CalibrationPoint(pressureCode, temperatureCode, pressure, temperature);
-            return null;
+            values = new double[4];
+            for (int column = 0; column < values.Length; column++)
+            {
+                if (!double.TryParse(Convert.ToString(worksheet.Cells[row, column + 1].Value), out values[column]))
+                    return false;
+            }
+            return true;
         }
     }
 }

@@ -11,13 +11,13 @@ internal class RegressionPickStep : IRegressionCalculator
     private readonly PhysicalValue _physicalValue;
     private readonly RegressionCandidateCalculator _candidates;
     private readonly IRegressionResultPicker _picker;
-    private readonly IRegressionCalculator? _next;
+    private readonly IRegressionCalculator _next;
 
     public RegressionPickStep(
         PhysicalValue physicalValue,
         RegressionCandidateCalculator candidates,
         IRegressionResultPicker picker,
-        IRegressionCalculator? next = null)
+        IRegressionCalculator next)
     {
         _physicalValue = physicalValue;
         _candidates = candidates;
@@ -32,7 +32,7 @@ internal class RegressionPickStep : IRegressionCalculator
             throw new NoRegressionCandidatesException(_physicalValue, dataset.Count);
 
         var picked = _picker.Pick(candidates, _physicalValue);
-        return [picked, .. _next?.Calculate(dataset) ?? []];
+        return [picked, .. _next.Calculate(dataset)];
     }
 
     private DataTwoFact ToRegressionData(CalibrationPoint point) => new()

@@ -51,8 +51,9 @@ public class DatasetReviewViewModelTests
 
         var row = Assert.Single(DatasetReviewViewModel.BuildRows(result));
 
+        Assert.Equal((8, 11), (row.FirstExcelRow, row.LastExcelRow));
         Assert.Equal("8–11", row.ExcelRow);
-        Assert.Null(row.Pressure);
+        Assert.Equal(string.Empty, row.Pressure);
     }
 
     [Fact]
@@ -84,7 +85,9 @@ public class DatasetReviewViewModelTests
 
         var rows = DatasetReviewViewModel.BuildRows(result);
 
-        Assert.Equal([-250.5, null, null, null], rows.Select(r => r.CodeError).ToArray());
+        Assert.Equal(
+            [DatasetReviewViewModel.FormatCodeError(-250.5), "", "", ""],
+            rows.Select(r => r.CodeError).ToArray());
     }
 
     [Fact]
@@ -94,6 +97,6 @@ public class DatasetReviewViewModelTests
 
         var row = Assert.Single(DatasetReviewViewModel.BuildRows(result));
 
-        Assert.Equal(45, row.Pressure);
+        Assert.Equal("45", row.Pressure);
     }
 }

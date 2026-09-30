@@ -47,7 +47,7 @@ internal class DatasetReviewStep : IRegressionCalculator
             checkResult.Series.OfType<SkippedSeries>().Count());
 
         var viewModel = new DatasetReviewViewModel(checkResult);
-        var window = new DatasetReviewWindow { DataContext = viewModel, Owner = System.Windows.Application.Current?.MainWindow };
+        var window = new DatasetReviewWindow { DataContext = viewModel, Owner = System.Windows.Application.Current.MainWindow };
 
         if (window.ShowDialog() != true)
         {

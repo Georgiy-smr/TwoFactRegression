@@ -11,18 +11,15 @@ namespace TwoFactRegressCalc
             DataContextChanged += OnDataContextChanged;
         }
 
+        // The view model is created for this window only, so the subscription never needs removing.
         private void OnDataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (e.OldValue is DatasetReviewViewModel oldViewModel)
-                oldViewModel.RequestClose -= OnRequestClose;
-            if (e.NewValue is DatasetReviewViewModel newViewModel)
-                newViewModel.RequestClose += OnRequestClose;
-        }
-
-        private void OnRequestClose(object? sender, EventArgs e)
-        {
-            DialogResult = true;
-            Close();
+            if (e.NewValue is DatasetReviewViewModel viewModel)
+                viewModel.RequestClose += (_, _) =>
+                {
+                    DialogResult = true;
+                    Close();
+                };
         }
     }
 }

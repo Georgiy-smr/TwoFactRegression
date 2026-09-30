@@ -29,7 +29,7 @@
                     <GridViewColumn Header="Строка Excel" Width="100" DisplayMemberBinding="{Binding ExcelRow}"/>
                     <GridViewColumn Header="Давление" Width="100" DisplayMemberBinding="{Binding Pressure}"/>
                     <GridViewColumn Header="Результат" Width="300" DisplayMemberBinding="{Binding Result}"/>
-                    <GridViewColumn Header="Отклонение кода" Width="120" DisplayMemberBinding="{Binding CodeError, StringFormat={}{0:0.##}}"/>
+                    <GridViewColumn Header="Отклонение кода" Width="120" DisplayMemberBinding="{Binding CodeError}"/>
                 </GridView>
             </ListView.View>
         </ListView>
