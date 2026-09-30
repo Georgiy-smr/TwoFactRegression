@@ -39,21 +39,22 @@ namespace TwoFactRegressCalc.Infrastructure.DI
             service.AddTransient<IDialogService, FileDialogService>();
 
 
-        // Dataset review -> pressure fit and pick -> temperature fit and pick.
+        // Runs as: dataset review -> pressure fit and pick -> temperature fit and pick.
+        // Scrutor wraps the registration, so the last Decorate call is the outermost step.
         internal static IServiceCollection Regression(this ServiceCollection service) =>
             service
                 .AddSingleton<RegressionCandidateCalculator>()
                 .AddTransient<IRegressionResultPicker, RegressionResultPickerService>()
-                .AddTransient<IRegressionCalculator>(provider =>
-                {
-                    var candidates = provider.GetRequiredService<RegressionCandidateCalculator>();
-                    var picker = provider.GetRequiredService<IRegressionResultPicker>();
-                    return new DatasetReviewStep(
-                        new RegressionPickStep(PhysicalValue.Pressure, candidates, picker,
-                            new RegressionPickStep(PhysicalValue.Temperature, candidates, picker)),
-                        provider.GetRequiredService<Config>(),
-                        provider.GetRequiredService<ILogger<DatasetReviewStep>>());
-                });
+                .AddTransient<IRegressionCalculator>(provider => PickStep(provider, PhysicalValue.Temperature))
+                .Decorate<IRegressionCalculator>((next, provider) => PickStep(provider, PhysicalValue.Pressure, next))
+                .Decorate<IRegressionCalculator, DatasetReviewStep>();
+
+        private static RegressionPickStep PickStep(
+            IServiceProvider provider, PhysicalValue physicalValue, IRegressionCalculator? next = null) =>
+            new(physicalValue,
+                provider.GetRequiredService<RegressionCandidateCalculator>(),
+                provider.GetRequiredService<IRegressionResultPicker>(),
+                next);
 
 
         internal static IServiceCollection FilledExcelDoc(this ServiceCollection service) =>
