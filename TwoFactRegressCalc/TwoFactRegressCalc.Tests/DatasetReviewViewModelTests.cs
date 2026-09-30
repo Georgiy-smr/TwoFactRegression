@@ -86,7 +86,7 @@ public class DatasetReviewViewModelTests
         var rows = new DatasetReviewViewModel(result).Rows;
 
         Assert.Equal(
-            [(-250.5).ToString("0.##"), "", "", ""],
+            [(-250.5 * 100000).ToString("0.##"), "", "", ""],
             rows.Select(r => r.CodeError).ToArray());
     }
 
