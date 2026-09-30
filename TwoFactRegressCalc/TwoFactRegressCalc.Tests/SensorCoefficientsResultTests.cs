@@ -1,6 +1,4 @@
 using System.Globalization;
-using Regression.Two_factor_regression;
-using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Models;
 
 namespace TwoFactRegressCalc.Tests;
@@ -89,17 +87,15 @@ public class SensorCoefficientsResultTests
     }
 
     [Fact]
-    public void Constructor_FromResults_TakesCoefficientsByPhysicalValueRegardlessOfOrder()
+    public void WithPressureAndWithTemperature_FillTheirOwnCoefficientsOnly()
     {
-        var data = new List<DataTwoFact> { new() { X1 = 1, X2 = 1, Y = 1 } };
         var pressure = Enumerable.Range(0, 16).Select(i => (double)i).ToList();
         var temperature = Enumerable.Range(100, 9).Select(i => (double)i).ToList();
 
-        var result = new SensorCoefficientsResult(
-        [
-            new TwoFactorRegressionResult("t", 2, PhysicalValue.Temperature, temperature, data),
-            new TwoFactorRegressionResult("p", 3, PhysicalValue.Pressure, pressure, data),
-        ]).GetAllCoefficients();
+        var result = new SensorCoefficientsResult([], [])
+            .WithTemperature(temperature)
+            .WithPressure(pressure)
+            .GetAllCoefficients();
 
         Assert.Equal(pressure, result.PressureCoefficients);
         Assert.Equal(temperature, result.TemperatureCoefficients);

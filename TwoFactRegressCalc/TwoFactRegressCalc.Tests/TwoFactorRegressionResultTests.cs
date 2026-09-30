@@ -1,5 +1,4 @@
 using Regression.Two_factor_regression;
-using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Models;
 
 namespace TwoFactRegressCalc.Tests;
@@ -17,7 +16,7 @@ public class TwoFactorRegressionResultTests
         };
         var coefficients = Enumerable.Range(0, 9).Select(i => (double)i).ToList();
 
-        var result = new TwoFactorRegressionResult("QR (normal equations)", 2, PhysicalValue.Pressure, coefficients, data);
+        var result = new TwoFactorRegressionResult("QR (normal equations)", 2, coefficients, data);
 
         Assert.Equal("QR (normal equations)", result.Name);
         Assert.Equal(2, result.Degree);

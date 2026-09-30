@@ -1,15 +1,12 @@
-using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
-
 namespace TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 
 public sealed class NoRegressionCandidatesException : Exception
 {
-    public NoRegressionCandidatesException(PhysicalValue physicalValue, int pointCount)
-        : base($"Не удалось рассчитать коэффициенты ({(physicalValue == PhysicalValue.Pressure ? "давление" : "температура")}): " +
-               $"недостаточно точек ({pointCount}).")
+    public NoRegressionCandidatesException(string valueName, int pointCount)
+        : base($"Не удалось рассчитать коэффициенты ({valueName}): недостаточно точек ({pointCount}).")
     {
-        PhysicalValue = physicalValue;
+        ValueName = valueName;
     }
 
-    public PhysicalValue PhysicalValue { get; }
+    public string ValueName { get; }
 }

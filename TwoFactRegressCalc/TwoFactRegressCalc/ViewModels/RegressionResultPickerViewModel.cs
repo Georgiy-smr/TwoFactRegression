@@ -1,7 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using TwoFactRegressCalc.Infrastructure.Commands.Base;
-using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Models;
 using TwoFactRegressCalc.ViewModels.Base;
 
@@ -9,10 +8,10 @@ namespace TwoFactRegressCalc.ViewModels;
 
 public class RegressionResultPickerViewModel : ViewModel
 {
-    public RegressionResultPickerViewModel(IEnumerable<TwoFactorRegressionResult> candidates, PhysicalValue physicalValue)
+    public RegressionResultPickerViewModel(IEnumerable<TwoFactorRegressionResult> candidates, string valueName)
     {
         Candidates = new ObservableCollection<TwoFactorRegressionResult>(candidates.OrderBy(c => c.MaxError));
-        Message = $"Select a regression model for {physicalValue}";
+        Message = $"Выберите модель регрессии: {valueName}";
         _selectedResult = Candidates.FirstOrDefault();
     }
 

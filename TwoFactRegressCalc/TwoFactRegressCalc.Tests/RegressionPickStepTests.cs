@@ -1,5 +1,4 @@
 using Regression.OutlierDetection;
-using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 using TwoFactRegressCalc.Models;
 
@@ -7,17 +6,24 @@ namespace TwoFactRegressCalc.Tests;
 
 public class RegressionPickStepTests
 {
+    private sealed record PickCall(string ValueName, TwoFactorRegressionResult[] Candidates, TwoFactorRegressionResult Picked);
+
     private sealed class FakePicker : IRegressionResultPicker
     {
-        public List<PhysicalValue> Calls { get; } = new();
-        public IReadOnlySet<PhysicalValue> CancelOn { get; init; } = new HashSet<PhysicalValue>();
+        public List<PickCall> Calls { get; } = new();
+        public IReadOnlySet<string> CancelOn { get; init; } = new HashSet<string>();
 
-        public TwoFactorRegressionResult Pick(IEnumerable<TwoFactorRegressionResult> candidates, PhysicalValue physicalValue)
+        public TwoFactorRegressionResult Pick(IEnumerable<TwoFactorRegressionResult> candidates, string valueName)
         {
-            Calls.Add(physicalValue);
-            if (CancelOn.Contains(physicalValue))
-                throw new RegressionSelectionCancelledException(physicalValue);
-            return candidates.OrderBy(c => c.MaxError).First();
+            if (CancelOn.Contains(valueName))
+            {
+                Calls.Add(new PickCall(valueName, candidates.ToArray(), candidates.First()));
+                throw new RegressionSelectionCancelledException(valueName);
+            }
+            var all = candidates.ToArray();
+            var picked = all.OrderBy(c => c.MaxError).First();
+            Calls.Add(new PickCall(valueName, all, picked));
+            return picked;
         }
     }
 
@@ -44,23 +50,38 @@ public class RegressionPickStepTests
     }
 
     [Fact]
-    public void Calculate_PicksPressureThenTemperature_AndReturnsBothResults()
+    public void Calculate_PicksPressureThenTemperature_AndFillsBothCoefficientSets()
     {
         var picker = new FakePicker();
 
-        var results = Chain(picker).Calculate(GenerateDataset(30));
+        var result = Chain(picker).Calculate(GenerateDataset(30)).GetAllCoefficients();
 
-        Assert.Equal([PhysicalValue.Pressure, PhysicalValue.Temperature], picker.Calls);
-        Assert.Equal([PhysicalValue.Pressure, PhysicalValue.Temperature], results.Select(r => r.PhysicalValue));
+        Assert.Equal(["давление", "температура"], picker.Calls.Select(c => c.ValueName));
+        Assert.Equal(picker.Calls[0].Picked.Coefficients, result.PressureCoefficients);
+        Assert.Equal(picker.Calls[1].Picked.Coefficients, result.TemperatureCoefficients);
     }
 
     [Fact]
     public void Calculate_EachStepFitsItsOwnColumn()
     {
-        var results = Chain(new FakePicker()).Calculate(GenerateDataset(30));
+        var picker = new FakePicker();
 
-        Assert.True(results[0].MaxError < 1e-6, $"Pressure fit MaxError {results[0].MaxError} - wrong column?");
-        Assert.True(results[1].MaxError > 100, $"Temperature fit MaxError {results[1].MaxError} - wrong column?");
+        Chain(picker).Calculate(GenerateDataset(30));
+
+        var (pressure, temperature) = (picker.Calls[0].Picked, picker.Calls[1].Picked);
+        Assert.True(pressure.MaxError < 1e-6, $"Pressure fit MaxError {pressure.MaxError} - wrong column?");
+        Assert.True(temperature.MaxError > 100, $"Temperature fit MaxError {temperature.MaxError} - wrong column?");
+    }
+
+    [Fact]
+    public void Calculate_OffersUpToFourthOrderForPressureAndOnlySecondOrderForTemperature()
+    {
+        var picker = new FakePicker();
+
+        Chain(picker).Calculate(GenerateDataset(30));
+
+        Assert.Equal([2, 3, 4], picker.Calls[0].Candidates.Select(c => c.Degree).Distinct().Order());
+        Assert.Equal([2], picker.Calls[1].Candidates.Select(c => c.Degree).Distinct());
     }
 
     [Fact]
@@ -70,16 +91,16 @@ public class RegressionPickStepTests
 
         var exception = Assert.Throws<NoRegressionCandidatesException>(() => Chain(picker).Calculate(GenerateDataset(5)));
 
-        Assert.Equal(PhysicalValue.Pressure, exception.PhysicalValue);
+        Assert.Equal("давление", exception.ValueName);
         Assert.Empty(picker.Calls);
     }
 
     [Fact]
     public void Calculate_PressurePickCancelled_StopsBeforeTemperature()
     {
-        var picker = new FakePicker { CancelOn = new HashSet<PhysicalValue> { PhysicalValue.Pressure } };
+        var picker = new FakePicker { CancelOn = new HashSet<string> { "давление" } };
 
         Assert.ThrowsAny<OperationCanceledException>(() => Chain(picker).Calculate(GenerateDataset(30)));
-        Assert.Equal([PhysicalValue.Pressure], picker.Calls);
+        Assert.Equal(["давление"], picker.Calls.Select(c => c.ValueName));
     }
 }

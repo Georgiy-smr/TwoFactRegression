@@ -1,6 +1,5 @@
 using System.Globalization;
 using Regression.Two_factor_regression;
-using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 using TwoFactRegressCalc.Models;
 using TwoFactRegressCalc.View.Converters;
@@ -31,7 +30,7 @@ public class RegressionCandidateCalculatorTests
     {
         var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure);
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 4);
 
         Assert.Empty(results);
     }
@@ -44,7 +43,7 @@ public class RegressionCandidateCalculatorTests
     {
         var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList();
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 4).ToList();
 
         Assert.NotEmpty(results);
         Assert.All(results, r => Assert.Equal(9, r.Coefficients.Count));
@@ -59,7 +58,7 @@ public class RegressionCandidateCalculatorTests
     {
         var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList();
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 4).ToList();
 
         Assert.NotEmpty(results);
         Assert.All(results, r => Assert.Contains(r.Coefficients.Count, new[] { 9, 16 }));
@@ -74,7 +73,7 @@ public class RegressionCandidateCalculatorTests
     {
         var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList();
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 4).ToList();
 
         Assert.NotEmpty(results);
         Assert.All(results, r => Assert.Contains(r.Coefficients.Count, new[] { 9, 16, 25 }));
@@ -89,7 +88,7 @@ public class RegressionCandidateCalculatorTests
     {
         var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList();
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 4).ToList();
 
         Assert.Equal(4, results.Count(r => r.Coefficients.Count == 25));
         Assert.All(results, r => Assert.DoesNotContain(r.Coefficients, double.IsNaN));
@@ -102,7 +101,7 @@ public class RegressionCandidateCalculatorTests
 
         for (var count = 0; count <= 30; count++)
         {
-            var exception = Record.Exception(() => calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList());
+            var exception = Record.Exception(() => calculator.Calculate(GenerateData(count), maxDegree: 4).ToList());
             Assert.Null(exception);
         }
     }
@@ -115,7 +114,7 @@ public class RegressionCandidateCalculatorTests
     {
         var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Temperature);
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 2);
 
         Assert.Empty(results);
     }
@@ -129,7 +128,7 @@ public class RegressionCandidateCalculatorTests
     {
         var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Temperature).ToList();
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 2).ToList();
 
         Assert.NotEmpty(results);
         Assert.All(results, r => Assert.Equal(9, r.Coefficients.Count));
@@ -144,7 +143,7 @@ public class RegressionCandidateCalculatorTests
 
         for (var count = 0; count <= 30; count++)
         {
-            var exception = Record.Exception(() => calculator.Calculate(GenerateData(count), PhysicalValue.Temperature).ToList());
+            var exception = Record.Exception(() => calculator.Calculate(GenerateData(count), maxDegree: 2).ToList());
             Assert.Null(exception);
         }
     }
@@ -157,7 +156,7 @@ public class RegressionCandidateCalculatorTests
     {
         var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(30), PhysicalValue.Pressure).ToList();
+        var results = calculator.Calculate(GenerateData(30), maxDegree: 4).ToList();
 
         var minimax = Assert.Single(results, r => r.Name == RegressionMethodNames.Minimax && r.Degree == order);
         Assert.Equal(coefficientCount, minimax.Coefficients.Count);
@@ -174,7 +173,7 @@ public class RegressionCandidateCalculatorTests
         const double epsilon = 1e-9;
         var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(30), PhysicalValue.Pressure).ToList();
+        var results = calculator.Calculate(GenerateData(30), maxDegree: 4).ToList();
 
         var minimax = Assert.Single(results, r => r.Name == RegressionMethodNames.Minimax && r.Degree == order);
         var qr = Assert.Single(results, r => r.Name == RegressionMethodNames.QrDesignMatrix && r.Degree == order);
@@ -188,8 +187,8 @@ public class RegressionCandidateCalculatorTests
         var calculator = new RegressionCandidateCalculator();
         var converter = new RegressionMethodDescriptionConverter();
 
-        var candidates = calculator.Calculate(GenerateData(30), PhysicalValue.Pressure)
-            .Concat(calculator.Calculate(GenerateData(30), PhysicalValue.Temperature))
+        var candidates = calculator.Calculate(GenerateData(30), maxDegree: 4)
+            .Concat(calculator.Calculate(GenerateData(30), maxDegree: 2))
             .ToList();
 
         Assert.NotEmpty(candidates);

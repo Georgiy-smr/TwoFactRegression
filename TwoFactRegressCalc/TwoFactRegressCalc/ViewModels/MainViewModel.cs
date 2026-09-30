@@ -85,7 +85,7 @@ namespace TwoFactRegressCalc.ViewModels
             try
             {
                 var dataset = await _dataExcelReader.ReadAsync(_filedialog.FilePath).ToListAsync();
-                var sensorCoefficients = new SensorCoefficientsResult(_regressionCalculator.Calculate(dataset));
+                var sensorCoefficients = _regressionCalculator.Calculate(dataset);
 
                 await _writer.Write(sensorCoefficients.GetAllCoefficients(), _filedialog.FilePath);
                 await _fileCreator.CreateAsync(combine, sensorCoefficients.GetCoefficientsBySensor());

@@ -1,6 +1,5 @@
 using Regression.Two_factor_regression;
 using Regression.Two_factor_regression.Implements;
-using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression.TwoFact;
 using TwoFactRegressCalc.Models;
 
@@ -47,17 +46,12 @@ internal class RegressionCandidateCalculator
         };
     }
 
-    public IEnumerable<TwoFactorRegressionResult> Calculate(IEnumerable<DataTwoFact> data, PhysicalValue physicalValue)
+    public IEnumerable<TwoFactorRegressionResult> Calculate(IEnumerable<DataTwoFact> data, int maxDegree)
     {
         var dataList = data.ToList();
         var results = new List<TwoFactorRegressionResult>();
 
-        // Temperature is always fit at 2nd order - the client doesn't need a degree choice for it.
-        var applicableVariants = physicalValue == PhysicalValue.Temperature
-            ? _variants.Where(v => v.Order == 2)
-            : _variants;
-
-        foreach (var variant in applicableVariants)
+        foreach (var variant in _variants.Where(v => v.Order <= maxDegree))
         {
             if (dataList.Count < variant.MinPointCount)
                 continue;
@@ -66,7 +60,7 @@ internal class RegressionCandidateCalculator
             if (coefs.Any(double.IsNaN))
                 continue;
 
-            results.Add(new TwoFactorRegressionResult(variant.Name, variant.Order, physicalValue, coefs, dataList));
+            results.Add(new TwoFactorRegressionResult(variant.Name, variant.Order, coefs, dataList));
         }
 
         return results;

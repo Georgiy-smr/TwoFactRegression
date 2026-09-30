@@ -20,7 +20,7 @@ internal class DatasetReviewStep : IRegressionCalculator
         _logger = logger;
     }
 
-    public IReadOnlyList<TwoFactorRegressionResult> Calculate(IReadOnlyList<CalibrationPoint> dataset)
+    public SensorCoefficientsResult Calculate(IReadOnlyList<CalibrationPoint> dataset)
     {
         Review(dataset);
         return _next.Calculate(dataset);
