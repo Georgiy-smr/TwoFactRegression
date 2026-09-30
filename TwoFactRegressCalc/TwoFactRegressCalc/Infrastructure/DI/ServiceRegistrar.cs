@@ -5,8 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Regression.Two_factor_regression;
+using Regression.OutlierDetection;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Creator;
+using TwoFactRegressCalc.Infrastructure.DI.Services.DatasetReview;
 using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
 using TwoFactRegressCalc.Infrastructure.DI.Services.JsonFileService;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
@@ -31,16 +32,22 @@ namespace TwoFactRegressCalc.Infrastructure.DI
 
         internal static IServiceCollection ExcelReader(this ServiceCollection services)
             => services
-                .AddSingleton<IReadData<DataTwoFact>, ExcelFileDataReader>();
+                .AddSingleton<IReadData<CalibrationPoint>, ExcelFileDataReader>();
 
         internal static IServiceCollection FileDialog(this ServiceCollection service) =>
             service.AddTransient<IDialogService, FileDialogService>();
 
 
+        // Runs as: dataset review -> pressure fit and pick -> temperature fit and pick.
+        // Scrutor wraps the registration, so the last Decorate call is the outermost step.
         internal static IServiceCollection Regression(this ServiceCollection service) =>
             service
-                .AddTransient<IRegressionCalculator, RegressionCalculator>()
-                .AddTransient<IRegressionResultPicker, RegressionResultPickerService>();
+                .AddSingleton<RegressionCandidateCalculator>()
+                .AddTransient<IRegressionResultPicker, RegressionResultPickerService>()
+                .AddTransient<IRegressionCalculator, RegressionChainEnd>()
+                .Decorate<IRegressionCalculator, TemperaturePickStep>()
+                .Decorate<IRegressionCalculator, PressurePickStep>()
+                .Decorate<IRegressionCalculator, DatasetReviewStep>();
 
 
         internal static IServiceCollection FilledExcelDoc(this ServiceCollection service) =>
@@ -49,7 +56,10 @@ namespace TwoFactRegressCalc.Infrastructure.DI
         internal static IServiceCollection FileCreator(this ServiceCollection service) =>
             service.AddTransient<ICreate<CoefficientsBySensor>, CreateFileWithCoefficients>();
         internal static IServiceCollection JsonFileService(this ServiceCollection service) =>
-            service.AddTransient<IJsonFileService<Config>, SettingsJsonFileService>();
+            service
+                .AddTransient<IJsonFileService<Config>, SettingsJsonFileService>()
+                // One shared instance: MainViewModel loads and edits it, the dataset review reads it.
+                .AddSingleton<Config>();
 
     }
      

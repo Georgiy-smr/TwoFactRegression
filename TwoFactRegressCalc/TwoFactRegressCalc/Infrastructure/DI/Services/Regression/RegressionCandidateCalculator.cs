@@ -1,12 +1,12 @@
 using Regression.Two_factor_regression;
 using Regression.Two_factor_regression.Implements;
-using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression.TwoFact;
 using TwoFactRegressCalc.Models;
 
 namespace TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 
-internal class RegressionCalculator : IRegressionCalculator
+// Fits every applicable method/degree variant; the operator picks one of the results.
+internal class RegressionCandidateCalculator
 {
     private sealed record Variant(string Name, int Order, int MinPointCount, Func<List<DataTwoFact>, IEnumerable<double>> Compute);
 
@@ -14,7 +14,7 @@ internal class RegressionCalculator : IRegressionCalculator
     private readonly QrFactorizedAlgorithm _qrFactorized = new();
     private readonly IReadOnlyList<Variant> _variants;
 
-    public RegressionCalculator()
+    public RegressionCandidateCalculator()
     {
         _variants = new List<Variant>
         {
@@ -46,17 +46,12 @@ internal class RegressionCalculator : IRegressionCalculator
         };
     }
 
-    public IEnumerable<TwoFactorRegressionResult> Calculate(IEnumerable<DataTwoFact> data, PhysicalValue physicalValue)
+    public IEnumerable<TwoFactorRegressionResult> Calculate(IEnumerable<DataTwoFact> data, int maxDegree)
     {
         var dataList = data.ToList();
         var results = new List<TwoFactorRegressionResult>();
 
-        // Temperature is always fit at 2nd order - the client doesn't need a degree choice for it.
-        var applicableVariants = physicalValue == PhysicalValue.Temperature
-            ? _variants.Where(v => v.Order == 2)
-            : _variants;
-
-        foreach (var variant in applicableVariants)
+        foreach (var variant in _variants.Where(v => v.Order <= maxDegree))
         {
             if (dataList.Count < variant.MinPointCount)
                 continue;

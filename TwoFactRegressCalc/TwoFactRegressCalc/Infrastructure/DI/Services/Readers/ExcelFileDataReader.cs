@@ -1,61 +1,44 @@
-﻿using Regression.Two_factor_regression;
 using OfficeOpenXml;
-using System;
-using System.Collections.Generic;
+using Regression.OutlierDetection;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TwoFactRegressCalc.Infrastructure.DI.Services.Readers
 {
-    internal class ExcelFileDataReader : IReadData<DataTwoFact>
+    internal class ExcelFileDataReader : IReadData<CalibrationPoint>
     {
-        public async IAsyncEnumerable<DataTwoFact> ReadAsync(string pathReadingFile, PhysicalValue tValue)
+        public async IAsyncEnumerable<CalibrationPoint> ReadAsync(string pathReadingFile)
         {
             ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
             using var excelPackage = new ExcelPackage(new FileInfo(pathReadingFile));
-            if (excelPackage.Workbook.Worksheets.FirstOrDefault() is not { } sheetMainParams)
+            if (excelPackage.Workbook.Worksheets.FirstOrDefault() is not { } worksheet)
                 throw new NotImplementedException();
 
-            int y = tValue switch
+            if (worksheet.Dimension is not { Rows: > 0 } dimension)
+                yield break;
+
+            var points = await Task.Run(() =>
             {
-                PhysicalValue.Pressure => 3,
-                PhysicalValue.Temperature => 4,
-                _ => throw new ArgumentOutOfRangeException(nameof(tValue), tValue, null)
-            };
-            await foreach (var dataTwoFact in ReadWorksheetAsync(sheetMainParams, yColumn:y))
-                yield return dataTwoFact;
+                var read = new List<CalibrationPoint>();
+                // The first row that doesn't parse ends the dataset.
+                for (int row = 2; row <= dimension.Rows && TryReadRow(worksheet, row, out var v); row++)
+                    read.Add(new CalibrationPoint(v[0], v[1], v[2], v[3]));
+                return read;
+            });
+
+            foreach (var point in points)
+                yield return point;
         }
 
-        private async IAsyncEnumerable<DataTwoFact> ReadWorksheetAsync(ExcelWorksheet worksheet,
-                                                                        int x1Column = 1,
-                                                                        int x2Column = 2, 
-                                                                        int yColumn = 3)
+        // Columns A-D: pressure code, temperature code, pressure, temperature.
+        private bool TryReadRow(ExcelWorksheet worksheet, int row, out double[] values)
         {
-            int rowCount = worksheet.Dimension.Rows;
-                if(rowCount <= 0)
-                    yield break;
-                bool resultTryParseX1 = false;
-                bool resultTryParseX2 = false;
-                bool resultTryParseY = false;
-                double currentX1 = 0;
-                double currentX2 = 0;
-                double currentY = 0;
-                for (int row = 2; row <= rowCount + 1; row++)
-                {
-                    await Task.Run(() =>
-                    {
-                        resultTryParseX1 = double.TryParse(worksheet.Cells[row, x1Column].Value?.ToString(), out currentX1);
-                        resultTryParseX2 = double.TryParse(worksheet.Cells[row, x2Column].Value?.ToString(), out currentX2);
-                        resultTryParseY = double.TryParse(worksheet.Cells[row, yColumn].Value?.ToString(), out currentY);
-                    });
-                    if (resultTryParseX1 && resultTryParseX2 && resultTryParseY)
-                        yield return new DataTwoFact() { X1 = currentX1, X2 = currentX2, Y = currentY };
-                    else yield break;
-                }
+            values = new double[4];
+            for (int column = 0; column < values.Length; column++)
+            {
+                if (!double.TryParse(Convert.ToString(worksheet.Cells[row, column + 1].Value), out values[column]))
+                    return false;
+            }
+            return true;
         }
-
-
     }
 }

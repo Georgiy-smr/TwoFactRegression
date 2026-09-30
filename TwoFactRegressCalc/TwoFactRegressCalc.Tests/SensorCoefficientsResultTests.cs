@@ -86,6 +86,21 @@ public class SensorCoefficientsResultTests
             Assert.Equal(F(temperature[i]), GetB(result, i));
     }
 
+    [Fact]
+    public void WithPressureAndWithTemperature_FillTheirOwnCoefficientsOnly()
+    {
+        var pressure = Enumerable.Range(0, 16).Select(i => (double)i).ToList();
+        var temperature = Enumerable.Range(100, 9).Select(i => (double)i).ToList();
+
+        var result = new SensorCoefficientsResult([], [])
+            .WithTemperature(temperature)
+            .WithPressure(pressure)
+            .GetAllCoefficients();
+
+        Assert.Equal(pressure, result.PressureCoefficients);
+        Assert.Equal(temperature, result.TemperatureCoefficients);
+    }
+
     [Theory]
     [InlineData(9)]
     [InlineData(16)]

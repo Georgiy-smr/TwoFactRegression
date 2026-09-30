@@ -102,6 +102,18 @@
                                    FontWeight="SemiBold"/>
                     </DockPanel>
                     <TextBox Text="{Binding InputSerial, UpdateSourceTrigger = PropertyChanged}"/>
+
+                    <DockPanel Margin="0 14 0 0">
+                        <TextBlock DockPanel.Dock="Left"
+                                   Text="Класс точности, % - "
+                                   VerticalAlignment="Center"
+                                   FontWeight="SemiBold"/>
+                        <TextBox Margin="10 0 0 0"
+                                 MinWidth="80"
+                                 VerticalContentAlignment="Center"
+                                 ToolTip="Порог проверки точек калибровки перед расчётом. Применяется после выхода из поля, сохраняется после успешного расчёта."
+                                 Text="{Binding AccuracyClassPercent, UpdateSourceTrigger=LostFocus}"/>
+                    </DockPanel>
                 </StackPanel>
             </StackPanel>
 

@@ -13,6 +13,12 @@ public sealed class SensorCoefficientsResult
         _temperatureCoefficients = temperatureCoefficients;
     }
 
+    public SensorCoefficientsResult WithPressure(IReadOnlyList<double> pressureCoefficients)
+        => new(pressureCoefficients, _temperatureCoefficients);
+
+    public SensorCoefficientsResult WithTemperature(IReadOnlyList<double> temperatureCoefficients)
+        => new(_pressureCoefficients, temperatureCoefficients);
+
     public CoefficientsBySensor GetCoefficientsBySensor()
         => new(
             At(_pressureCoefficients, 0), At(_pressureCoefficients, 1), At(_pressureCoefficients, 2), At(_pressureCoefficients, 3),
@@ -26,5 +32,5 @@ public sealed class SensorCoefficientsResult
     public AllSensorCoefficients GetAllCoefficients()
         => new(_pressureCoefficients, _temperatureCoefficients);
 
-    private static double At(IReadOnlyList<double> src, int i) => i < src.Count ? src[i] : 0d;
+    private double At(IReadOnlyList<double> src, int i) => i < src.Count ? src[i] : 0d;
 }

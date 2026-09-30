@@ -1,13 +1,12 @@
 using System.Globalization;
 using Regression.Two_factor_regression;
-using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Regression;
 using TwoFactRegressCalc.Models;
 using TwoFactRegressCalc.View.Converters;
 
 namespace TwoFactRegressCalc.Tests;
 
-public class RegressionCalculatorTests
+public class RegressionCandidateCalculatorTests
 {
     private static List<DataTwoFact> GenerateData(int count)
     {
@@ -29,9 +28,9 @@ public class RegressionCalculatorTests
     [InlineData(8)]
     public void Calculate_Pressure_BelowMinimumPointCount_ReturnsNoCandidates(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure);
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 4);
 
         Assert.Empty(results);
     }
@@ -42,9 +41,9 @@ public class RegressionCalculatorTests
     [InlineData(15)]
     public void Calculate_Pressure_BelowThirdOrderThreshold_OnlyReturnsSecondOrderCandidates(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList();
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 4).ToList();
 
         Assert.NotEmpty(results);
         Assert.All(results, r => Assert.Equal(9, r.Coefficients.Count));
@@ -57,9 +56,9 @@ public class RegressionCalculatorTests
     [InlineData(24)]
     public void Calculate_Pressure_BelowFourthOrderThreshold_ReturnsSecondAndThirdOrderCandidatesOnly(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList();
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 4).ToList();
 
         Assert.NotEmpty(results);
         Assert.All(results, r => Assert.Contains(r.Coefficients.Count, new[] { 9, 16 }));
@@ -72,9 +71,9 @@ public class RegressionCalculatorTests
     [InlineData(30)]
     public void Calculate_Pressure_AtOrAboveFourthOrderThreshold_CanReturnAllThreeOrders(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList();
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 4).ToList();
 
         Assert.NotEmpty(results);
         Assert.All(results, r => Assert.Contains(r.Coefficients.Count, new[] { 9, 16, 25 }));
@@ -87,9 +86,9 @@ public class RegressionCalculatorTests
     [InlineData(30)]
     public void Calculate_Pressure_AtOrAboveFourthOrderThreshold_ReturnsFourFourthOrderCandidates(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList();
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 4).ToList();
 
         Assert.Equal(4, results.Count(r => r.Coefficients.Count == 25));
         Assert.All(results, r => Assert.DoesNotContain(r.Coefficients, double.IsNaN));
@@ -98,11 +97,11 @@ public class RegressionCalculatorTests
     [Fact]
     public void Calculate_Pressure_DoesNotThrow_AcrossBoundaryAndNonBoundaryPointCounts()
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
         for (var count = 0; count <= 30; count++)
         {
-            var exception = Record.Exception(() => calculator.Calculate(GenerateData(count), PhysicalValue.Pressure).ToList());
+            var exception = Record.Exception(() => calculator.Calculate(GenerateData(count), maxDegree: 4).ToList());
             Assert.Null(exception);
         }
     }
@@ -113,9 +112,9 @@ public class RegressionCalculatorTests
     [InlineData(8)]
     public void Calculate_Temperature_BelowMinimumPointCount_ReturnsNoCandidates(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Temperature);
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 2);
 
         Assert.Empty(results);
     }
@@ -127,9 +126,9 @@ public class RegressionCalculatorTests
     [InlineData(30)]
     public void Calculate_Temperature_AtOrAboveMinimumPointCount_OnlyReturnsSecondOrderCandidates(int count)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(count), PhysicalValue.Temperature).ToList();
+        var results = calculator.Calculate(GenerateData(count), maxDegree: 2).ToList();
 
         Assert.NotEmpty(results);
         Assert.All(results, r => Assert.Equal(9, r.Coefficients.Count));
@@ -140,11 +139,11 @@ public class RegressionCalculatorTests
     [Fact]
     public void Calculate_Temperature_DoesNotThrow_AcrossBoundaryAndNonBoundaryPointCounts()
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
         for (var count = 0; count <= 30; count++)
         {
-            var exception = Record.Exception(() => calculator.Calculate(GenerateData(count), PhysicalValue.Temperature).ToList());
+            var exception = Record.Exception(() => calculator.Calculate(GenerateData(count), maxDegree: 2).ToList());
             Assert.Null(exception);
         }
     }
@@ -155,9 +154,9 @@ public class RegressionCalculatorTests
     [InlineData(4, 25)]
     public void Calculate_Pressure_ReturnsMinimaxCandidateForEachOrder(int order, int coefficientCount)
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(30), PhysicalValue.Pressure).ToList();
+        var results = calculator.Calculate(GenerateData(30), maxDegree: 4).ToList();
 
         var minimax = Assert.Single(results, r => r.Name == RegressionMethodNames.Minimax && r.Degree == order);
         Assert.Equal(coefficientCount, minimax.Coefficients.Count);
@@ -172,9 +171,9 @@ public class RegressionCalculatorTests
     {
         // GenerateData is an exact cubic, so at orders 3 and 4 both errors are ~0 and only rounding separates them.
         const double epsilon = 1e-9;
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
 
-        var results = calculator.Calculate(GenerateData(30), PhysicalValue.Pressure).ToList();
+        var results = calculator.Calculate(GenerateData(30), maxDegree: 4).ToList();
 
         var minimax = Assert.Single(results, r => r.Name == RegressionMethodNames.Minimax && r.Degree == order);
         var qr = Assert.Single(results, r => r.Name == RegressionMethodNames.QrDesignMatrix && r.Degree == order);
@@ -185,11 +184,11 @@ public class RegressionCalculatorTests
     [Fact]
     public void DescriptionConverter_HasSpecificDescriptionForEveryProducedMethodName()
     {
-        var calculator = new RegressionCalculator();
+        var calculator = new RegressionCandidateCalculator();
         var converter = new RegressionMethodDescriptionConverter();
 
-        var candidates = calculator.Calculate(GenerateData(30), PhysicalValue.Pressure)
-            .Concat(calculator.Calculate(GenerateData(30), PhysicalValue.Temperature))
+        var candidates = calculator.Calculate(GenerateData(30), maxDegree: 4)
+            .Concat(calculator.Calculate(GenerateData(30), maxDegree: 2))
             .ToList();
 
         Assert.NotEmpty(candidates);
