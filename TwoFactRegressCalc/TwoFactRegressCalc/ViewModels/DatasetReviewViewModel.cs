@@ -9,12 +9,12 @@ namespace TwoFactRegressCalc.ViewModels;
 public class DatasetReviewViewModel : ViewModel
 {
     // Dataset position 0 is Excel row 2: row 1 holds the column headers.
-    public const int ExcelRowOffset = 2;
+    private const int ExcelRowOffset = 2;
 
-    public const string OutlierText = "Ошибочная точка";
-    public const string AmbiguousPointText = "Подозрительная точка";
-    public const string UnresolvableSeriesText = "Серия не разобрана — переснять";
-    public const string SkippedSeriesPrefix = "Серия пропущена: ";
+    private const string OutlierText = "Ошибочная точка";
+    private const string AmbiguousPointText = "Подозрительная точка";
+    private const string UnresolvableSeriesText = "Серия не разобрана — переснять";
+    private const string SkippedSeriesPrefix = "Серия пропущена: ";
 
     public DatasetReviewViewModel(DatasetCheckResult checkResult)
     {
@@ -33,7 +33,7 @@ public class DatasetReviewViewModel : ViewModel
 
     private void OnContinueExecuted(object p) => RequestClose(this, EventArgs.Empty);
 
-    public static IReadOnlyList<DatasetReviewRow> BuildRows(DatasetCheckResult checkResult)
+    private static IReadOnlyList<DatasetReviewRow> BuildRows(DatasetCheckResult checkResult)
         => checkResult.Series
             .SelectMany(BuildSeriesRows)
             .OrderBy(r => r.NominalTemperature)
@@ -67,7 +67,7 @@ public class DatasetReviewViewModel : ViewModel
             series.Rows.Max() + ExcelRowOffset,
             string.Empty, result, string.Empty);
 
-    public static string FormatPressure(double pressure) => pressure.ToString("0.####");
+    private static string FormatPressure(double pressure) => pressure.ToString("0.####");
 
-    public static string FormatCodeError(double codeError) => codeError.ToString("0.##");
+    private static string FormatCodeError(double codeError) => codeError.ToString("0.##");
 }
