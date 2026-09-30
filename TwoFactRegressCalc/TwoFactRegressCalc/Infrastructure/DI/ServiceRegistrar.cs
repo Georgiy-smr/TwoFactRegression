@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Regression.Two_factor_regression;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Creator;
+using TwoFactRegressCalc.Infrastructure.DI.Services.DatasetReview;
 using TwoFactRegressCalc.Infrastructure.DI.Services.FileDialog;
 using TwoFactRegressCalc.Infrastructure.DI.Services.JsonFileService;
 using TwoFactRegressCalc.Infrastructure.DI.Services.Readers;
@@ -31,7 +32,12 @@ namespace TwoFactRegressCalc.Infrastructure.DI
 
         internal static IServiceCollection ExcelReader(this ServiceCollection services)
             => services
-                .AddSingleton<IReadData<DataTwoFact>, ExcelFileDataReader>();
+                .AddSingleton<ExcelFileDataReader>()
+                .AddSingleton<IReadData<DataTwoFact>>(provider => provider.GetRequiredService<ExcelFileDataReader>())
+                .AddSingleton<IReadCalibrationPoints>(provider => provider.GetRequiredService<ExcelFileDataReader>());
+
+        internal static IServiceCollection DatasetReview(this ServiceCollection service) =>
+            service.AddTransient<IDatasetErrorReview, DatasetErrorReviewService>();
 
         internal static IServiceCollection FileDialog(this ServiceCollection service) =>
             service.AddTransient<IDialogService, FileDialogService>();
