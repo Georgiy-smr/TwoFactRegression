@@ -46,6 +46,10 @@ namespace TwoFactRegressCalc.ViewModels
             _configService = configService;
             _config = config;
             _logger = logger;
+
+            СalcFromExсelCommand = new LambdaCommandAsync(OnCalcFromExelCommandExecuted, CanCalcFromExelCommandExecute);
+            EditPathFileSaveCommand = new LambdaCommandAsync(OnEditPathFileSaveCommandExecuted, CanEditPathFileSaveCommandExecute);
+            LoadCommand = new LambdaCommandAsync(OnLoadCommandExecuted, CanLoadCommandExecute);
         }
 
         /// <summary>
@@ -64,11 +68,7 @@ namespace TwoFactRegressCalc.ViewModels
 
         #region CalcFromExel Расчет из файла эксель
 
-        private ICommand? _сalcFromExelCommand;
-
-
-        public ICommand СalcFromExсelCommand =>
-            _сalcFromExelCommand ?? new LambdaCommandAsync(OnCalcFromExelCommandExecuted, CanCalcFromExelCommandExecute);
+        public ICommand СalcFromExсelCommand { get; }
 
         private async Task OnCalcFromExelCommandExecuted(object arg)
         {
@@ -89,6 +89,7 @@ namespace TwoFactRegressCalc.ViewModels
 
                 await _writer.Write(sensorCoefficients.GetAllCoefficients(), _filedialog.FilePath);
                 await _fileCreator.CreateAsync(combine, sensorCoefficients.GetCoefficientsBySensor());
+                await _configService.WriteAsync(_config);
             }
             catch (OperationCanceledException e)
             {
@@ -177,34 +178,18 @@ namespace TwoFactRegressCalc.ViewModels
         }
 
         /// <summary>
-        /// Класс точности датчика, % - порог проверки точек калибровки
+        /// Класс точности датчика, % - порог проверки точек калибровки.
+        /// Сохраняется в настройки после успешного расчёта.
         /// </summary>
         public double AccuracyClassPercent
         {
             get => _config.AccuracyClassPercent;
             set
             {
-                if (!double.IsFinite(value) || value <= 0 || value == _config.AccuracyClassPercent)
-                {
-                    // Revert the TextBox to the last valid value.
-                    OnPropertyChanged();
-                    return;
-                }
-                _config.AccuracyClassPercent = value;
+                if (double.IsFinite(value) && value > 0)
+                    _config.AccuracyClassPercent = value;
+                // Also reverts the TextBox to the last valid value when the input was rejected.
                 OnPropertyChanged();
-                SaveConfig();
-            }
-        }
-
-        private async void SaveConfig()
-        {
-            try
-            {
-                await _configService.WriteAsync(_config);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Failed to save settings");
             }
         }
 
@@ -219,9 +204,7 @@ namespace TwoFactRegressCalc.ViewModels
 
         #region CmdChangePath
 
-        private ICommand? _editPathFileSaveCommand;
-        public ICommand EditPathFileSaveCommand =>
-            _editPathFileSaveCommand ?? new LambdaCommandAsync(OnEditPathFileSaveCommandExecuted, CanEditPathFileSaveCommandExecute);
+        public ICommand EditPathFileSaveCommand { get; }
         private bool CanEditPathFileSaveCommandExecute(object p) => true;
         private async Task OnEditPathFileSaveCommandExecuted(object p)
         {
@@ -254,21 +237,25 @@ namespace TwoFactRegressCalc.ViewModels
         #endregion
 
         #region Cmd Load
-        private ICommand? _loadCommand;
+        public ICommand LoadCommand { get; }
 
-        public ICommand LoadCommand => _loadCommand ?? new LambdaCommandAsync(On_NAME_CommandExecuted, Can_NAME_CommandExecute);
+        private bool CanLoadCommandExecute(object p) => true;
 
-        //сами методы
-        private bool Can_NAME_CommandExecute(object p) => true;
-
-        private async Task On_NAME_CommandExecuted(object p)
+        // Reads settings.json into the shared Config; unreadable settings keep the defaults.
+        private async Task OnLoadCommandExecuted(object p)
         {
-            var saved = await _configService.ReadAsync();
-            _config.FilePath = saved.FilePath;
-            _config.AccuracyClassPercent = saved.AccuracyClassPercent;
+            try
+            {
+                var saved = await _configService.ReadAsync();
+                _config.FilePath = saved.FilePath;
+                _config.AccuracyClassPercent = saved.AccuracyClassPercent;
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to read settings, using defaults");
+            }
             FilePath = _config.FilePath;
             OnPropertyChanged(nameof(AccuracyClassPercent));
-            _logger.LogError("TEST");
         }
 
         #endregion

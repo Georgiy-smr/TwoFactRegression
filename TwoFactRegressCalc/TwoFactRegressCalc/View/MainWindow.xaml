@@ -111,7 +111,7 @@
                         <TextBox Margin="10 0 0 0"
                                  MinWidth="80"
                                  VerticalContentAlignment="Center"
-                                 ToolTip="Порог проверки точек калибровки перед расчётом. Применяется после выхода из поля."
+                                 ToolTip="Порог проверки точек калибровки перед расчётом. Применяется после выхода из поля, сохраняется после успешного расчёта."
                                  Text="{Binding AccuracyClassPercent, UpdateSourceTrigger=LostFocus}"/>
                     </DockPanel>
                 </StackPanel>
